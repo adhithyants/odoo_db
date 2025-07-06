@@ -1,0 +1,14 @@
+// This file is meant to be edited automatically by the user. The variables it
+// contains should not be renamed otherwise it would break existing customers
+// customizations.
+
+$o-user-website-values: map-merge($o-user-website-values, o-map-omit((
+    'logo-height': 5.3125rem,
+    'header-links-style': pills,
+    'header-template': 'boxed',
+    'menu-gradient': linear-gradient(135deg, rgb(222, 222, 222) 0%, rgb(69, 69, 69) 100%),
+    'header-text-color': 'o-color-5',
+    'menu-box-shadow': rgba(0, 0, 0, 0.15) 0px 8px 16px 0px inset,
+    'hamburger-position-mobile': 'center',
+    // -- hook --
+)));
