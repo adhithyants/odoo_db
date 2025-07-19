@@ -20350,6 +20350,12 @@ registry.category("actions").add("website_view_hierarchy",ViewHierarchy);return 
 /* /website_sale/static/src/js/systray_items/new_content.js */
 odoo.define('@website_sale/js/systray_items/new_content',['@website/systray_items/new_content','@web/core/utils/patch'],function(require){'use strict';let __exports={};const{NewContentModal,MODULE_STATUS}=require('@website/systray_items/new_content');const{patch}=require("@web/core/utils/patch");patch(NewContentModal.prototype,{setup(){super.setup();const newProductElement=this.state.newContentElements.find(element=>element.moduleXmlId==='base.module_website_sale');newProductElement.createNewContent=()=>this.onAddContent('website_sale.product_product_action_add',true,{default_is_published:true});newProductElement.status=MODULE_STATUS.INSTALLED;newProductElement.model='product.product';},});return __exports;});;
 
+/* /website_blog/static/src/js/tours/website_blog.js */
+odoo.define('@website_blog/js/tours/website_blog',['@web/core/l10n/translation','@website/js/tours/tour_utils','@odoo/owl'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{clickOnSave,registerWebsitePreviewTour,}=require('@website/js/tours/tour_utils');const{markup}=require("@odoo/owl");registerWebsitePreviewTour("blog",{url:"/",},()=>[{trigger:"body:not(:has(#o_new_content_menu_choices)) .o_new_content_container > a",content:_t("Click here to add new content to your website."),tooltipPosition:'bottom',run:"click",},{trigger:'a[data-module-xml-id="base.module_website_blog"]',content:_t("Select this menu item to create a new blog post."),tooltipPosition:"bottom",run:"click",},{trigger:'div[name="name"] input',content:_t("Enter your post's title"),tooltipPosition:"bottom",run:"edit Test",},{trigger:'div.o_field_widget[name="blog_id"]',},{trigger:"button.o_form_button_save",content:_t("Select the blog you want to add the post to."),run:"click",},{trigger:"#oe_snippets.o_loaded",timeout:15000,},{trigger:":iframe h1[data-oe-expression=\"blog_post.name\"]",content:_t("Edit your title, the subtitle is optional."),tooltipPosition:"top",run:"editor Test",},{trigger:`:iframe #wrap h1[data-oe-expression="blog_post.name"]:not(:contains(''))`,},{trigger:"we-button[data-background]:eq(0)",content:markup(_t("Set a blog post <b>cover</b>.")),tooltipPosition:"top",run:"click",},{trigger:".o_select_media_dialog .o_we_search",content:_t("Search for an image. (eg: type \"business\")"),tooltipPosition:"top",},{trigger:".o_select_media_dialog .o_existing_attachment_cell:first img",content:_t("Choose an image from the library."),tooltipPosition:"top",run:"click",},{trigger:":iframe #o_wblog_post_content p",content:markup(_t("<b>Write your story here.</b> Use the top toolbar to style your text: add an image or table, set bold or italic, etc. Drag and drop building blocks for more graphical blogs.")),tooltipPosition:"top",run:"editor Blog content",},...clickOnSave(),{trigger:".o_menu_systray_item.o_mobile_preview > a",content:markup(_t("Use this icon to preview your blog post on <b>mobile devices</b>.")),tooltipPosition:"bottom",run:"click",},{trigger:".o_website_preview.o_is_mobile",},{trigger:".o_menu_systray_item.o_mobile_preview > a",content:_t("Once you have reviewed the content on mobile, you can switch back to the normal view by clicking here again"),tooltipPosition:"right",run:"click",},{trigger:":iframe body:not(.editor_enable)",},{trigger:'.o_menu_systray_item a:contains("Unpublished")',tooltipPosition:"bottom",content:markup(_t("<b>Publish your blog post</b> to make it visible to your visitors.")),run:"click",},{trigger:'.o_menu_systray_item a:contains("Published")',}]);return __exports;});;
+
+/* /website_blog/static/src/js/systray_items/new_content.js */
+odoo.define('@website_blog/js/systray_items/new_content',['@website/systray_items/new_content','@web/core/utils/patch'],function(require){'use strict';let __exports={};const{NewContentModal,MODULE_STATUS}=require('@website/systray_items/new_content');const{patch}=require("@web/core/utils/patch");patch(NewContentModal.prototype,{setup(){super.setup();const newBlogElement=this.state.newContentElements.find(element=>element.moduleXmlId==='base.module_website_blog');newBlogElement.createNewContent=()=>this.onAddContent('website_blog.blog_post_action_add',true);newBlogElement.status=MODULE_STATUS.INSTALLED;newBlogElement.model='blog.post';},});return __exports;});;
+
 /* /website/static/src/js/tours/tour_utils.js */
 odoo.define('@website/js/tours/tour_utils',['@web/core/l10n/translation','@web/core/registry','@web/core/browser/cookie','@odoo/owl','@web/core/utils/objects','@web/core/macro'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{registry}=require("@web/core/registry");const{cookie}=require("@web/core/browser/cookie");const{markup}=require("@odoo/owl");const{omit}=require("@web/core/utils/objects");const{waitForStable}=require("@web/core/macro");__exports.addMedia=addMedia;function addMedia(position="right"){return{trigger:`.modal-content footer .btn-primary`,content:markup(_t("<b>Add</b> the selected image.")),tooltipPosition:position,run:"click",};}
 __exports.assertCssVariable=assertCssVariable;function assertCssVariable(variableName,variableValue,trigger=':iframe body'){return{isActive:["auto"],content:`Check CSS variable ${variableName}=${variableValue}`,trigger:trigger,run(){const styleValue=getComputedStyle(this.anchor).getPropertyValue(variableName);if((styleValue&&styleValue.trim().replace(/["']/g,''))!==variableValue.trim().replace(/["']/g,'')){throw new Error(`Failed precondition: ${variableName}=${styleValue} (should be ${variableValue})`);}},};}
@@ -20759,6 +20765,383 @@ onSelect(selectedSubjection,{input}){const{value}=Object.getPrototypeOf(selected
 onInput({inputValue}){this.props.targetDropdown.value=inputValue;}}
 return __exports;});;
 
+/* /barcodes/static/src/barcode_handler_field.js */
+odoo.define('@barcodes/barcode_handler_field',['@web/core/registry','@web/views/fields/standard_field_props','@web/core/utils/hooks','@odoo/owl'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{standardFieldProps}=require("@web/views/fields/standard_field_props");const{useBus,useService}=require("@web/core/utils/hooks");const{Component,xml}=require("@odoo/owl");const BarcodeHandlerField=__exports.BarcodeHandlerField=class BarcodeHandlerField extends Component{static template=xml``;static props={...standardFieldProps};setup(){const barcode=useService("barcode");useBus(barcode.bus,"barcode_scanned",this.onBarcodeScanned);}
+onBarcodeScanned(event){const{barcode}=event.detail;this.props.record.update({[this.props.name]:barcode});}}
+const barcodeHandlerField=__exports.barcodeHandlerField={component:BarcodeHandlerField,};registry.category("fields").add("barcode_handler",barcodeHandlerField);return __exports;});;
+
+/* /barcodes/static/src/barcode_handlers.js */
+odoo.define('@barcodes/barcode_handlers',['@web/core/l10n/translation','@web/core/registry','@web/core/utils/ui','@web/core/macro','@odoo/hoot-dom'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{registry}=require("@web/core/registry");const{getVisibleElements}=require("@web/core/utils/ui");const{Macro}=require("@web/core/macro");const{click,edit}=require("@odoo/hoot-dom");function clickOnButton(selector){const button=document.body.querySelector(selector);if(button){button.click();}}
+function updatePager(position){const pager=document.body.querySelector("nav.o_pager");if(!pager||pager.innerText.includes("-")){return;}
+let next;if(position==="first"){next=1;}else{next=parseInt(pager.querySelector(".o_pager_limit").textContent,10);}
+let current=parseInt(pager.innerText.split('/')[0],10);if(current===next){return;}
+new Macro({name:"updating pager",timeout:1000,steps:[{trigger:"span.o_pager_value",async action(trigger){await click(trigger);},},{trigger:"input.o_pager_value",async action(trigger){await click(trigger);await edit(next,{confirm:"blur"});},},],}).start();}
+const COMMANDS=__exports.COMMANDS={"OCDEDIT":()=>clickOnButton(".o_form_button_edit"),"OCDDISC":()=>clickOnButton(".o_form_button_cancel"),"OCDSAVE":()=>clickOnButton(".o_form_button_save"),"OCDPREV":()=>clickOnButton(".o_pager_previous"),"OCDNEXT":()=>clickOnButton(".o_pager_next"),"OCDPAGERFIRST":()=>updatePager("first"),"OCDPAGERLAST":()=>updatePager("last"),};const barcodeGenericHandlers=__exports.barcodeGenericHandlers={dependencies:["ui","barcode","notification"],start(env,{ui,barcode,notification}){barcode.bus.addEventListener("barcode_scanned",(ev)=>{const barcode=ev.detail.barcode;if(barcode.startsWith("OBT")){let targets=[];try{targets=getVisibleElements(ui.activeElement,`[barcode_trigger=${barcode.slice(3)}]`);}catch{console.warn(`Barcode '${barcode}' is not valid`);}
+for(let elem of targets){elem.click();}}
+if(barcode.startsWith("OCD")){const fn=COMMANDS[barcode];if(fn){fn();}else{notification.add(_t("Barcode: %(barcode)s",{barcode}),{title:_t("Unknown barcode command"),type:"danger"});}}});}};registry.category("services").add("barcode_handlers",barcodeGenericHandlers);return __exports;});;
+
+/* /barcodes/static/src/barcode_service.js */
+odoo.define('@barcodes/barcode_service',['@web/core/browser/feature_detection','@web/core/registry','@web/session','@odoo/owl'],function(require){'use strict';let __exports={};const{isBrowserChrome,isMobileOS}=require("@web/core/browser/feature_detection");const{registry}=require("@web/core/registry");const{session}=require("@web/session");const{EventBus,whenReady}=require("@odoo/owl");function isEditable(element){return element.matches('input,textarea,[contenteditable="true"]');}
+function makeBarcodeInput(){const inputEl=document.createElement('input');inputEl.setAttribute("style","position:fixed;top:50%;transform:translateY(-50%);z-index:-1;opacity:0");inputEl.setAttribute("autocomplete","off");inputEl.setAttribute("inputmode","none");inputEl.classList.add("o-barcode-input");inputEl.setAttribute('name','barcode');return inputEl;}
+const barcodeService=__exports.barcodeService={maxTimeBetweenKeysInMs:session.max_time_between_keys_in_ms||150,isMobileChrome:isMobileOS()&&isBrowserChrome(),cleanBarcode:function(barcode){return barcode.replace(/Alt|Shift|Control/g,'');},start(){const bus=new EventBus();let timeout=null;let bufferedBarcode="";let currentTarget=null;let barcodeInput=null;function handleBarcode(barcode,target){bus.trigger('barcode_scanned',{barcode,target});if(target.getAttribute('barcode_events')==="true"){const barcodeScannedEvent=new CustomEvent("barcode_scanned",{detail:{barcode,target}});target.dispatchEvent(barcodeScannedEvent);}}
+function checkBarcode(ev){let str=barcodeInput?barcodeInput.value:bufferedBarcode;str=barcodeService.cleanBarcode(str);if(str.length>=3){if(ev){ev.preventDefault();}
+handleBarcode(str,currentTarget);}
+if(barcodeInput){barcodeInput.value="";}
+bufferedBarcode="";currentTarget=null;}
+function keydownHandler(ev){if(!ev.key){return;}
+const isSpecialKey=!['Control','Alt'].includes(ev.key)&&(ev.key.length>1||ev.metaKey);const isEndCharacter=ev.key.match(/(Enter|Tab)/);if(isSpecialKey&&!isEndCharacter){return;}
+currentTarget=ev.target;if(currentTarget!==barcodeInput&&isEditable(currentTarget)&&!currentTarget.dataset.enableBarcode&&currentTarget.getAttribute("barcode_events")!=="true"){return;}
+clearTimeout(timeout);if(isEndCharacter){checkBarcode(ev);}else{bufferedBarcode+=ev.key;timeout=setTimeout(checkBarcode,barcodeService.maxTimeBetweenKeysInMs);}}
+function mobileChromeHandler(ev){if(ev.key==="Unidentified"){return;}
+if(document.activeElement&&!document.activeElement.matches('input:not([type]), input[type="text"], textarea, [contenteditable], '+'[type="email"], [type="number"], [type="password"], [type="tel"], [type="search"]')){barcodeInput.focus();}
+keydownHandler(ev);}
+whenReady(()=>{const isMobileChrome=barcodeService.isMobileChrome;if(isMobileChrome){barcodeInput=makeBarcodeInput();document.body.appendChild(barcodeInput);}
+const handler=isMobileChrome?mobileChromeHandler:keydownHandler;document.body.addEventListener('keydown',handler);});return{bus,};},};registry.category("services").add("barcode",barcodeService);return __exports;});;
+
+/* /barcodes/static/src/components/barcode_scanner.js */
+odoo.define('@barcodes/components/barcode_scanner',['@web/core/l10n/translation','@web/core/barcode/barcode_dialog','@web/core/barcode/barcode_video_scanner','@odoo/owl','@web/core/utils/hooks'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{scanBarcode}=require("@web/core/barcode/barcode_dialog");const{isBarcodeScannerSupported}=require("@web/core/barcode/barcode_video_scanner");const{Component}=require("@odoo/owl");const{useService}=require("@web/core/utils/hooks");const BarcodeScanner=__exports.BarcodeScanner=class BarcodeScanner extends Component{static template="barcodes.BarcodeScanner";static props={onBarcodeScanned:{type:Function},};setup(){this.notification=useService("notification");this.isBarcodeScannerSupported=isBarcodeScannerSupported();this.scanBarcode=()=>scanBarcode(this.env,this.facingMode);}
+get facingMode(){return"environment";}
+async openMobileScanner(){let error=null;let barcode=null;try{barcode=await this.scanBarcode();}catch(err){error=err.message;}
+if(barcode){this.props.onBarcodeScanned(barcode);if("vibrate"in window.navigator){window.navigator.vibrate(100);}}else{this.notification.add(error||_t("Please, Scan again!"),{type:"warning",});}}}
+return __exports;});;
+
+/* /barcodes/static/src/float_scannable_field.js */
+odoo.define('@barcodes/float_scannable_field',['@web/core/registry','@web/views/fields/float/float_field'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{FloatField,floatField}=require("@web/views/fields/float/float_field");const FloatScannableField=__exports.FloatScannableField=class FloatScannableField extends FloatField{static template="barcodes.FloatScannableField";onBarcodeScanned(){this.inputRef.el.dispatchEvent(new InputEvent("input"));}}
+const floatScannableField=__exports.floatScannableField={...floatField,component:FloatScannableField,};registry.category("fields").add("field_float_scannable",floatScannableField);return __exports;});;
+
+/* /barcodes/static/src/js/barcode_parser.js */
+odoo.define('@barcodes/js/barcode_parser',[],function(require){'use strict';let __exports={};const BarcodeParser=__exports.BarcodeParser=class BarcodeParser{static barcodeNomenclatureFields=["name","rule_ids","upc_ean_conv"];static barcodeRuleFields=["name","sequence","type","encoding","pattern","alias"];static async fetchNomenclature(orm,id){const[nomenclature]=await orm.read("barcode.nomenclature",[id],this.barcodeNomenclatureFields);let rules=await orm.searchRead("barcode.rule",[["barcode_nomenclature_id","=",id]],this.barcodeRuleFields);rules=rules.sort((a,b)=>{return a.sequence-b.sequence;});nomenclature.rules=rules;return nomenclature;}
+constructor(){this.setup(...arguments);}
+setup({nomenclature}){this.nomenclature=nomenclature;}
+get_barcode_check_digit(numericBarcode){let oddsum=0,evensum=0,total=0;const code=numericBarcode.split('').reverse();code.shift();for(let i=0;i<code.length;i++){if(i%2===0){evensum+=parseInt(code[i]);}else{oddsum+=parseInt(code[i]);}}
+total=evensum*3+oddsum;return(10-total%10)%10;}
+check_encoding(barcode,encoding){if(encoding==='any'){return true;}
+const barcodeSizes={ean8:8,ean13:13,upca:12,};return barcode.length===barcodeSizes[encoding]&&/^\d+$/.test(barcode)&&this.get_barcode_check_digit(barcode)===parseInt(barcode[barcode.length-1]);}
+sanitize_ean(ean){ean=ean.substr(0,13);ean="0".repeat(13-ean.length)+ean;return ean.substr(0,12)+this.get_barcode_check_digit(ean);}
+sanitize_upc(upc){return this.sanitize_ean(upc).substr(1,12);}
+match_pattern(barcode,pattern,encoding){var match={value:0,base_code:barcode,match:false,};barcode=barcode.replace("\\","\\\\").replace("{",'\{').replace("}","\}").replace(".","\.");var numerical_content=pattern.match(/[{][N]*[D]*[}]/);var base_pattern=pattern;if(numerical_content){var num_start=numerical_content.index;var num_length=numerical_content[0].length;var value_string=barcode.substr(num_start,num_length-2);var whole_part_match=numerical_content[0].match("[{][N]*[D}]");var decimal_part_match=numerical_content[0].match("[{N][D]*[}]");var whole_part=value_string.substr(0,whole_part_match.index+whole_part_match[0].length-2);var decimal_part="0."+value_string.substr(decimal_part_match.index,decimal_part_match[0].length-1);if(whole_part===''){whole_part='0';}
+match.value=parseInt(whole_part)+parseFloat(decimal_part);match.base_code=barcode.substr(0,num_start);base_pattern=pattern.substr(0,num_start);for(var i=0;i<(num_length-2);i++){match.base_code+="0";base_pattern+="0";}
+match.base_code+=barcode.substr(num_start+num_length-2,barcode.length-1);base_pattern+=pattern.substr(num_start+num_length,pattern.length-1);match.base_code=match.base_code.replace("\\\\","\\").replace("\{","{").replace("\}","}").replace("\.",".");var base_code=match.base_code.split('');if(encoding==='ean13'){base_code[12]=''+this.get_barcode_check_digit(match.base_code);}else if(encoding==='ean8'){base_code[7]=''+this.get_barcode_check_digit(match.base_code);}else if(encoding==='upca'){base_code[11]=''+this.get_barcode_check_digit(match.base_code);}
+match.base_code=base_code.join('');}
+base_pattern=base_pattern.split('|').map(part=>part.startsWith('^')?part:'^'+part).join('|');match.match=match.base_code.match(base_pattern);return match;}
+parse_barcode(barcode){if(barcode.match(/^urn:/)){return this.parseURI(barcode);}
+return this.parseBarcodeNomenclature(barcode);}
+parseBarcodeNomenclature(barcode){const parsed_result={encoding:'',type:'error',code:barcode,base_code:barcode,value:0,};if(!this.nomenclature){return parsed_result;}
+var rules=this.nomenclature.rules;for(var i=0;i<rules.length;i++){var rule=rules[i];var cur_barcode=barcode;if(rule.encoding==='ean13'&&this.check_encoding(barcode,'upca')&&this.nomenclature.upc_ean_conv in{'upc2ean':'','always':''}){cur_barcode='0'+cur_barcode;}else if(rule.encoding==='upca'&&this.check_encoding(barcode,'ean13')&&barcode[0]==='0'&&this.nomenclature.upc_ean_conv in{'ean2upc':'','always':''}){cur_barcode=cur_barcode.substr(1,12);}
+if(!this.check_encoding(cur_barcode,rule.encoding)){continue;}
+var match=this.match_pattern(cur_barcode,rules[i].pattern,rule.encoding);if(match.match){if(rules[i].type==='alias'){barcode=rules[i].alias;parsed_result.code=barcode;parsed_result.type='alias';}
+else{parsed_result.encoding=rules[i].encoding;parsed_result.type=rules[i].type;parsed_result.value=match.value;parsed_result.code=cur_barcode;if(rules[i].encoding==="ean13"){parsed_result.base_code=this.sanitize_ean(match.base_code);}
+else{parsed_result.base_code=match.base_code;}
+return parsed_result;}}}
+return parsed_result;}
+parseURI(barcode){const uriParts=barcode.split(":").map(v=>v.trim());const identifier=uriParts[3];const data=uriParts[4].split(".");if(identifier==="lgtin"||identifier==="sgtin"){return this.convertURIGTINDataIntoProductAndTrackingNumber(barcode,data);}else if(identifier==="sgtin-96"||identifier==="sgtin-198"){return this.convertURIGTINDataIntoProductAndTrackingNumber(barcode,data.slice(1));}else if(identifier==="sscc"){return this.convertURISSCCDataIntoPackage(barcode,data);}else if(identifier==="sscc-96"){return this.convertURISSCCDataIntoPackage(barcode,data.slice(1));}
+return barcode;}
+convertURIGTINDataIntoProductAndTrackingNumber(base_code,data){const[gs1CompanyPrefix,itemRefAndIndicator,trackingNumber]=data;const indicator=itemRefAndIndicator[0];const itemRef=itemRefAndIndicator.slice(1);let productBarcode=indicator+gs1CompanyPrefix+itemRef;productBarcode+=this.get_barcode_check_digit(productBarcode+"0");return[{base_code,code:productBarcode,string_value:productBarcode,type:"product",value:productBarcode,},{base_code,code:trackingNumber,string_value:trackingNumber,type:"lot",value:trackingNumber,}];}
+convertURISSCCDataIntoPackage(base_code,data){const[gs1CompanyPrefix,serialReference]=data;const extension=serialReference[0];const serialRef=serialReference.slice(1);let sscc=extension+gs1CompanyPrefix+serialRef;sscc+=this.get_barcode_check_digit(sscc+"0");return[{base_code,code:sscc,string_value:sscc,type:"package",value:sscc,}];}}
+return __exports;});;
+
+/* /barcodes_gs1_nomenclature/static/src/js/barcode_parser.js */
+odoo.define('@barcodes_gs1_nomenclature/js/barcode_parser',['@web/core/utils/patch','@barcodes/js/barcode_parser','@web/core/l10n/translation'],function(require){'use strict';let __exports={};const{patch}=require("@web/core/utils/patch");const{BarcodeParser}=require("@barcodes/js/barcode_parser");const{_t}=require("@web/core/l10n/translation");const GS1BarcodeError=__exports.GS1BarcodeError=class GS1BarcodeError extends Error{};const FNC1_CHAR=__exports.FNC1_CHAR=String.fromCharCode(29);patch(BarcodeParser,{barcodeNomenclatureFields:[...BarcodeParser.barcodeNomenclatureFields,"is_gs1_nomenclature","gs1_separator_fnc1",],barcodeRuleFields:[...BarcodeParser.barcodeRuleFields,"gs1_content_type","gs1_decimal_usage","associated_uom_id",],});patch(BarcodeParser.prototype,{setup(attributes){super.setup(...arguments);const nomenclatureSeparator=this.nomenclature&&this.nomenclature.gs1_separator_fnc1;this.gs1SeparatorRegex=new RegExp(nomenclatureSeparator||'.^','g');},gs1_date_to_date(gs1Date){const now=new Date();const substractYear=parseInt(gs1Date.slice(0,2))-(now.getFullYear()%100);let century=Math.floor(now.getFullYear()/100);if(51<=substractYear&&substractYear<=99){century--;}else if(-99<=substractYear&&substractYear<=-50){century++;}
+const year=century*100+parseInt(gs1Date.slice(0,2));const date=new Date(year,parseInt(gs1Date.slice(2,4)-1));if(gs1Date.slice(-2)==='00'){date.setDate(new Date(year,parseInt(gs1Date.slice(2,4)),0).getDate());}else{date.setDate(parseInt(gs1Date.slice(-2)));}
+return date;},parse_gs1_rule_pattern(match,rule){const result={rule:Object.assign({},rule),ai:match[1],string_value:match[2],code:match[2],base_code:match[2],type:rule.type};if(rule.gs1_content_type==='measure'){let decimalPosition=0;if(rule.gs1_decimal_usage){decimalPosition=parseInt(match[1][match[1].length-1]);}
+if(decimalPosition>0){const integral=match[2].slice(0,match[2].length-decimalPosition);const decimal=match[2].slice(match[2].length-decimalPosition);result.value=parseFloat(integral+"."+decimal);}else{result.value=parseInt(match[2]);}}else if(rule.gs1_content_type==='identifier'){if(parseInt(match[2][match[2].length-1])!==this.get_barcode_check_digit("0".repeat(18-match[2].length)+match[2])){throw new Error(_t("Invalid barcode: the check digit is incorrect"));}
+result.value=match[2];}else if(rule.gs1_content_type==='date'){if(match[2].length!==6){throw new Error(_t("Invalid barcode: can't be formated as date"));}
+result.value=this.gs1_date_to_date(match[2]);}else{result.value=match[2];}
+return result;},gs1_decompose_extanded(barcode){const results=[];const rules=this.nomenclature.rules.filter(rule=>rule.encoding==='gs1-128');const separatorReg=`(?:${FNC1_CHAR}+)?`;barcode=this._convertGS1Separators(barcode);barcode=this.cleanBarcode(barcode);while(barcode.length>0){const barcodeLength=barcode.length;for(const rule of rules){const match=barcode.match("^"+rule.pattern+separatorReg);if(match&&match.length>=3){const res=this.parse_gs1_rule_pattern(match,rule);if(res){barcode=barcode.slice(match.index+match[0].length);results.push(res);if(barcode.length===0){return results;}}else{throw new GS1BarcodeError(_t("This barcode can't be parsed by any barcode rules."));}}}
+if(barcodeLength===barcode.length){throw new GS1BarcodeError(_t("This barcode can't be partially or fully parsed."));}}
+return results;},parseBarcodeNomenclature(barcode){if(this.nomenclature&&this.nomenclature.is_gs1_nomenclature){return this.gs1_decompose_extanded(barcode);}
+return super.parseBarcodeNomenclature(...arguments);},cleanBarcode(barcode){if(barcode[0]===FNC1_CHAR){barcode=barcode.slice(1);}
+return barcode;},_convertGS1Separators:function(barcode){barcode=barcode.replace(this.gs1SeparatorRegex,FNC1_CHAR);return barcode;},});return __exports;});;
+
+/* /barcodes_gs1_nomenclature/static/src/js/barcode_service.js */
+odoo.define('@barcodes_gs1_nomenclature/js/barcode_service',['@web/session','@web/core/utils/patch','@barcodes/barcode_service','@barcodes_gs1_nomenclature/js/barcode_parser'],function(require){'use strict';let __exports={};const{session}=require("@web/session");const{patch}=require("@web/core/utils/patch");const{barcodeService}=require('@barcodes/barcode_service');const{FNC1_CHAR}=require("@barcodes_gs1_nomenclature/js/barcode_parser");patch(barcodeService,{gs1SeparatorRegex:new RegExp(session.gs1_group_separator_encodings||'.^','g'),cleanBarcode(barcode){barcode=barcode.replace(barcodeService.gs1SeparatorRegex,FNC1_CHAR);return super.cleanBarcode(barcode);},});return __exports;});;
+
+/* /stock/static/src/client_actions/multi_print.js */
+odoo.define('@stock/client_actions/multi_print',['@web/core/l10n/translation','@web/core/registry','@web/core/utils/strings'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{registry}=require("@web/core/registry");const{sprintf}=require("@web/core/utils/strings");async function doMultiPrint(env,action){for(const report of action.params.reports){if(report.type!="ir.actions.report"){env.services.notification.add(_t("Incorrect type of action submitted as a report, skipping action"),{title:_t("Report Printing Error"),});continue}else if(report.report_type==="qweb-html"){env.services.notification.add(sprintf(_t("HTML reports cannot be auto-printed, skipping report: %s"),report.name),{title:_t("Report Printing Error"),});continue}
+await env.services.action.doAction({type:"ir.actions.report",...report});}
+if(action.params.anotherAction){return env.services.action.doAction(action.params.anotherAction);}else if(action.params.onClose){action.params.onClose()}else{return env.services.action.doAction("reload_context");}}
+registry.category("actions").add("do_multi_print",doMultiPrint);return __exports;});;
+
+/* /stock/static/src/client_actions/stock_traceability_report_backend.js */
+odoo.define('@stock/client_actions/stock_traceability_report_backend',['@web/core/l10n/translation','@odoo/owl','@web/core/network/download','@web/core/registry','@web/core/utils/hooks','@web/search/action_hook','@web/search/layout','@web/webclient/actions/action_service'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{Component,onWillStart,useState}=require("@odoo/owl");const{download}=require("@web/core/network/download");const{registry}=require("@web/core/registry");const{useService}=require("@web/core/utils/hooks");const{useSetupAction}=require("@web/search/action_hook");const{Layout}=require("@web/search/layout");const{standardActionServiceProps}=require("@web/webclient/actions/action_service");function processLine(line){return{...line,lines:[],isFolded:true};}
+function extractPrintData(lines){const data=[];for(const line of lines){const{id,model_id,model,unfoldable,level}=line;data.push({id:id,model_id:model_id,model_name:model,unfoldable,level:level||1,});if(!line.isFolded){data.push(...extractPrintData(line.lines));}}
+return data;}
+const TraceabilityReport=__exports.TraceabilityReport=class TraceabilityReport extends Component{static template="stock.TraceabilityReport";static components={Layout};static props={...standardActionServiceProps};setup(){this.actionService=useService("action");this.orm=useService("orm");onWillStart(this.onWillStart);useSetupAction({getLocalState:()=>({lines:[...this.state.lines],}),});this.state=useState({lines:this.props.state?.lines||[],});const{active_id,active_model,auto_unfold,context,lot_name,ttype,url,lang}=this.props.action.context;this.controllerUrl=url;this.context=context||{};Object.assign(this.context,{active_id:active_id||this.props.action.params.active_id,auto_unfold:auto_unfold||false,model:active_model||this.props.action.context.params?.active_model||false,lot_name:lot_name||false,ttype:ttype||false,lang:lang||false,});if(this.context.model){this.props.updateActionState({active_model:this.context.model});}
+this.display={controlPanel:{},searchPanel:false,};}
+async onWillStart(){if(!this.state.lines.length){const mainLines=await this.orm.call("stock.traceability.report","get_main_lines",[this.context,]);this.state.lines=mainLines.map(processLine);}}
+onClickBoundLink(line){this.actionService.doAction({type:"ir.actions.act_window",res_model:line.res_model,res_id:line.res_id,views:[[false,"form"]],target:"current",});}
+onCLickOpenLot(line){this.actionService.doAction({type:"ir.actions.client",tag:"stock_report_generic",name:line.lot_name!==undefined&&line.lot_name.toString(),context:{active_id:line.lot_id,active_model:"stock.lot",url:"/stock/output_format/stock?active_id=:active_id&active_model=:active_model",},});}
+onClickUpDownStream(line){this.actionService.doAction({type:"ir.actions.client",tag:"stock_report_generic",name:_t("Traceability Report"),context:{active_id:line.model_id,active_model:line.model,auto_unfold:true,lot_name:line.lot_name!==undefined&&line.lot_name,url:"/stock/output_format/stock/active_id",},});}
+onClickPrint(){const data=JSON.stringify(extractPrintData(this.state.lines));const url=this.controllerUrl.replace(":active_id",this.context.active_id).replace(":active_model",this.context.model).replace("output_format","pdf");download({data:{data},url,});}
+async toggleLine(line){line.isFolded=!line.isFolded;if(!line.lines.length){line.lines=(await this.orm.call("stock.traceability.report","get_lines",[line.id],{model_id:line.model_id,model_name:line.model,level:line.level+30||1,})).map(processLine);}}}
+registry.category("actions").add("stock_report_generic",TraceabilityReport);return __exports;});;
+
+/* /stock/static/src/components/reception_report_line/stock_reception_report_line.js */
+odoo.define('@stock/components/reception_report_line/stock_reception_report_line',['@web/core/utils/hooks','@web/views/fields/formatters','@odoo/owl'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{formatFloat}=require("@web/views/fields/formatters");const{Component}=require("@odoo/owl");const ReceptionReportLine=__exports.ReceptionReportLine=class ReceptionReportLine extends Component{static template="stock.ReceptionReportLine";static props={data:Object,parentIndex:String,showUom:Boolean,precision:Number,};setup(){this.ormService=useService("orm");this.actionService=useService("action");this.formatFloat=(val)=>formatFloat(val,{digits:[false,this.props.precision]});}
+async onClickForecast(){const action=await this.ormService.call("stock.move","action_product_forecast_report",[[this.data.move_out_id]],);return this.actionService.doAction(action);}
+async onClickPrint(){if(!this.data.move_out_id){return;}
+const reportFile='stock.report_reception_report_label';const modelIds=[this.data.move_out_id];const productQtys=[Math.ceil(this.data.quantity)||'1'];return this.actionService.doAction({type:"ir.actions.report",report_type:"qweb-pdf",report_name:`${reportFile}?docids=${modelIds}&quantity=${productQtys}`,report_file:reportFile,});}
+async onClickAssign(){await this.ormService.call("report.stock.report_reception","action_assign",[false,[this.data.move_out_id],[this.data.quantity],[this.data.move_ins]],);this.env.bus.trigger("update-assign-state",{isAssigned:true,tableIndex:this.props.parentIndex,lineIndex:this.data.index});}
+async onClickUnassign(){const done=await this.ormService.call("report.stock.report_reception","action_unassign",[false,this.data.move_out_id,this.data.quantity,this.data.move_ins])
+if(done){this.env.bus.trigger("update-assign-state",{isAssigned:false,tableIndex:this.props.parentIndex,lineIndex:this.data.index});}}
+get data(){return this.props.data;}}
+return __exports;});;
+
+/* /stock/static/src/components/reception_report_main/stock_reception_report_main.js */
+odoo.define('@stock/components/reception_report_main/stock_reception_report_main',['@web/core/registry','@web/core/utils/hooks','@web/search/control_panel/control_panel','@stock/components/reception_report_table/stock_reception_report_table','@odoo/owl','@web/webclient/actions/action_service'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{useBus,useService}=require("@web/core/utils/hooks");const{ControlPanel}=require("@web/search/control_panel/control_panel");const{ReceptionReportTable}=require("@stock/components/reception_report_table/stock_reception_report_table");const{Component,onWillStart,useState}=require("@odoo/owl");const{standardActionServiceProps}=require("@web/webclient/actions/action_service");const ReceptionReportMain=__exports.ReceptionReportMain=class ReceptionReportMain extends Component{static template="stock.ReceptionReportMain";static components={ControlPanel,ReceptionReportTable,};static props={...standardActionServiceProps};setup(){this.controlPanelDisplay={};this.ormService=useService("orm");this.actionService=useService("action");this.reportName="stock.report_reception";this.state=useState({sourcesToLines:{},});useBus(this.env.bus,"update-assign-state",(ev)=>this._changeAssignedState(ev.detail));onWillStart(async()=>{let defaultDocIds;const{rfield,rids}=this.props.action.context.params||{};if(rfield&&rids){const parsedIds=JSON.parse(rids);defaultDocIds=[rfield,parsedIds instanceof Array?parsedIds:[parsedIds]];}else{defaultDocIds=Object.entries(this.context).find(([k,v])=>k.startsWith("default_"));if(!defaultDocIds){defaultDocIds=[false,[0]];}}
+this.contextDefaultDoc={field:defaultDocIds[0],ids:defaultDocIds[1]};if(this.contextDefaultDoc.field){this.props.updateActionState({rfield:this.contextDefaultDoc.field,rids:JSON.stringify(this.contextDefaultDoc.ids)});}
+this.data=await this.getReportData();this.state.sourcesToLines=this.data.sources_to_lines;});}
+async getReportData(){const context={...this.context,[this.contextDefaultDoc.field]:this.contextDefaultDoc.ids};const args=[this.contextDefaultDoc.ids,{context,report_type:"html"},];return this.ormService.call("report.stock.report_reception","get_report_data",args,{context},);}
+async onClickAssignAll(){const moveIds=[];const quantities=[];const inIds=[];for(const lines of Object.values(this.state.sourcesToLines)){for(const line of lines){if(line.is_assigned)continue;moveIds.push(line.move_out_id);quantities.push(line.quantity);inIds.push(line.move_ins);}}
+await this.ormService.call("report.stock.report_reception","action_assign",[false,moveIds,quantities,inIds],);this._changeAssignedState({isAssigned:true});}
+async onClickTitle(docId){return this.actionService.doAction({type:"ir.actions.act_window",res_model:this.data.doc_model,res_id:docId,views:[[false,"form"]],target:"current",});}
+onClickPrint(){return this.actionService.doAction({type:"ir.actions.report",report_type:"qweb-pdf",report_name:`${this.reportName}/?context={"${this.contextDefaultDoc.field}": ${JSON.stringify(this.contextDefaultDoc.ids)}}`,report_file:this.reportName,});}
+onClickPrintLabels(){const reportFile='stock.report_reception_report_label';const modelIds=[];const quantities=[];for(const lines of Object.values(this.state.sourcesToLines)){for(const line of lines){if(!line.is_assigned)continue;modelIds.push(line.move_out_id);quantities.push(Math.ceil(line.quantity)||1);}}
+if(!modelIds.length){return;}
+return this.actionService.doAction({type:"ir.actions.report",report_type:"qweb-pdf",report_name:`${reportFile}?docids=${modelIds}&quantity=${quantities}`,report_file:reportFile,});}
+_changeAssignedState(options){const{isAssigned,tableIndex,lineIndex}=options;for(const[tabIndex,lines]of Object.entries(this.state.sourcesToLines)){if(tableIndex&&tableIndex!=tabIndex)continue;lines.forEach(line=>{if(isNaN(lineIndex)||lineIndex==line.index){line.is_assigned=isAssigned;}});}}
+get context(){return this.props.action.context;}
+get hasContent(){return this.data.sources_to_lines&&Object.keys(this.data.sources_to_lines).length>0;}
+get isAssignAllDisabled(){return Object.values(this.state.sourcesToLines).every(lines=>lines.every(line=>line.is_assigned||!line.is_qty_assignable));}
+get isPrintLabelDisabled(){return Object.values(this.state.sourcesToLines).every(lines=>lines.every(line=>!line.is_assigned));}}
+registry.category("actions").add("reception_report",ReceptionReportMain);return __exports;});;
+
+/* /stock/static/src/components/reception_report_table/stock_reception_report_table.js */
+odoo.define('@stock/components/reception_report_table/stock_reception_report_table',['@web/core/utils/hooks','@stock/components/reception_report_line/stock_reception_report_line','@odoo/owl'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{ReceptionReportLine}=require("@stock/components/reception_report_line/stock_reception_report_line");const{Component}=require("@odoo/owl");const ReceptionReportTable=__exports.ReceptionReportTable=class ReceptionReportTable extends Component{static template="stock.ReceptionReportTable";static components={ReceptionReportLine,};static props={index:String,scheduledDate:{type:String,optional:true},lines:Array,source:Array,showUom:Boolean,precision:Number,};setup(){this.actionService=useService("action");this.ormService=useService("orm");}
+async onClickAssignAll(){const moveIds=[];const quantities=[];const inIds=[];for(const line of this.props.lines){if(line.is_assigned)continue;moveIds.push(line.move_out_id);quantities.push(line.quantity);inIds.push(line.move_ins);}
+await this.ormService.call("report.stock.report_reception","action_assign",[false,moveIds,quantities,inIds],);this.env.bus.trigger("update-assign-state",{isAssigned:true,tableIndex:this.props.index});}
+async onClickLink(resModel,resId,viewType){return this.actionService.doAction({type:"ir.actions.act_window",res_model:resModel,res_id:resId,views:[[false,viewType]],target:"current",});}
+async onClickPrintLabels(){const reportFile='stock.report_reception_report_label';const modelIds=[];const quantities=[];for(const line of this.props.lines){if(!line.is_assigned)continue;modelIds.push(line.move_out_id);quantities.push(Math.ceil(line.quantity)||1);}
+if(!modelIds.length){return;}
+return this.actionService.doAction({type:"ir.actions.report",report_type:"qweb-pdf",report_name:`${reportFile}?docids=${modelIds}&quantity=${quantities}`,report_file:reportFile,});}
+get hasMovesIn(){return this.props.lines.some(line=>line.move_ins&&line.move_ins.length>0);}
+get hasAssignAllButton(){return this.props.lines.some(line=>line.is_qty_assignable);}
+get isAssignAllDisabled(){return this.props.lines.every(line=>line.is_assigned);}
+get isPrintLabelDisabled(){return this.props.lines.every(line=>!line.is_assigned);}}
+return __exports;});;
+
+/* /stock/static/src/components/stock_overview/stock_overview.js */
+odoo.define('@stock/components/stock_overview/stock_overview',['@web/core/registry','@web/views/kanban/kanban_view','@web/views/kanban/kanban_renderer','@web/model/relational_model/dynamic_record_list','@web/model/relational_model/dynamic_group_list'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{kanbanView}=require("@web/views/kanban/kanban_view");const{KanbanRenderer}=require("@web/views/kanban/kanban_renderer");const{DynamicRecordList}=require("@web/model/relational_model/dynamic_record_list");const{DynamicGroupList}=require("@web/model/relational_model/dynamic_group_list");const StockKanbanRenderer=__exports.StockKanbanRenderer=class StockKanbanRenderer extends KanbanRenderer{setup(){super.setup();}
+getGroupsOrRecords(){const{list}=this.props;let records=[];if(list instanceof DynamicRecordList){records.push(...list.records);}else if(list instanceof DynamicGroupList){list.groups.forEach(g=>{records.push(...g.list.records);});}
+let allEmpty=records.every(r=>{return r.data.kanban_dashboard_graph.includes('"type": "sample"');});if(allEmpty){records.forEach(r=>{let parsedDashboardData=JSON.parse(r.data.kanban_dashboard_graph);parsedDashboardData[0].values.forEach(d=>{d.value=Math.floor(Math.random()*9+1);});r.data.kanban_dashboard_graph=JSON.stringify(parsedDashboardData);});}
+return super.getGroupsOrRecords();}}
+const StockKanbanView=__exports.StockKanbanView={...kanbanView,Renderer:StockKanbanRenderer,};registry.category("views").add("stock_dashboard_kanban",StockKanbanView);return __exports;});;
+
+/* /stock/static/src/fields/stock_move_line_x2_many_field.js */
+odoo.define('@stock/fields/stock_move_line_x2_many_field',['@web/core/l10n/translation','@web/core/registry','@web/views/fields/x2many/x2many_field','@web/views/fields/relational_utils','@web/core/utils/hooks','@web/core/domain'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{registry}=require("@web/core/registry");const{X2ManyField,x2ManyField}=require("@web/views/fields/x2many/x2many_field");const{useSelectCreate,useOpenMany2XRecord}=require("@web/views/fields/relational_utils");const{useService}=require("@web/core/utils/hooks");const{Domain}=require("@web/core/domain");const SMLX2ManyField=__exports.SMLX2ManyField=class SMLX2ManyField extends X2ManyField{setup(){super.setup();this.orm=useService("orm");this.dirtyQuantsData=new Map();const selectCreate=useSelectCreate({resModel:"stock.quant",activeActions:this.activeActions,onSelected:(resIds)=>this.selectRecord(resIds),onCreateEdit:()=>this.createOpenRecord(),});this.selectCreate=(params)=>{return selectCreate(params);};this.openQuantRecord=useOpenMany2XRecord({resModel:"stock.quant",activeActions:this.activeActions,onRecordSaved:(record)=>this.selectRecord([record.resId]),fieldString:this.props.string,is2Many:true,});}
+async onAdd({context,editable}={}){if(!this.props.record.data.show_quant){return super.onAdd(...arguments);}
+await this.updateDirtyQuantsData();context={...context,single_product:true,list_view_ref:"stock.view_stock_quant_tree_simple",search_default_on_hand:true,search_default_in_stock:true,};const productName=this.props.record.data.product_id[1];const title=_t("Add line: %s",productName);let domain=[["product_id","=",this.props.record.data.product_id[0]],["location_id","child_of",this.props.context.default_location_id],];if(this.dirtyQuantsData.size){const notFullyUsed=[];const fullyUsed=[];for(const[quantId,quantData]of this.dirtyQuantsData.entries()){if(quantData.available_quantity>0){notFullyUsed.push(quantId);}else{fullyUsed.push(quantId);}}
+if(fullyUsed.length){domain=Domain.and([domain,[["id","not in",fullyUsed]]]).toList();}
+if(notFullyUsed.length){domain=Domain.or([domain,[["id","in",notFullyUsed]]]).toList();}}
+return this.selectCreate({domain,context,title});}
+async updateDirtyQuantsData(){this.dirtyQuantsData.clear();const dirtyQuantityMoveLines=this.props.record.data.move_line_ids.records.filter((ml)=>!ml.data.quant_id&&ml._values.quantity-ml._changes.quantity);const dirtyQuantMoveLines=this.props.record.data.move_line_ids.records.filter((ml)=>ml.data.quant_id[0]);const dirtyMoveLines=[...dirtyQuantityMoveLines,...dirtyQuantMoveLines];if(!dirtyMoveLines.length){return;}
+const match=await this.orm.call("stock.move.line","get_move_line_quant_match",[this.props.record.data.move_line_ids.records.filter((rec)=>rec.resId).map((rec)=>rec.resId),this.props.record.resId,dirtyMoveLines.filter((rec)=>rec.resId).map((rec)=>rec.resId),dirtyQuantMoveLines.map((ml)=>ml.data.quant_id[0]),],{});const quants=match[0];if(!quants.length){return;}
+const dbMoveLinesData=new Map();for(const data of match[1]){dbMoveLinesData.set(data[0],{quantity:data[1].quantity,quantId:data[1].quant_id});}
+const offsetByQuant=new Map();for(const ml of dirtyQuantMoveLines){const quantId=ml.data.quant_id[0];offsetByQuant.set(quantId,(offsetByQuant.get(quantId)||0)-ml.data.quantity);const dbQuantId=dbMoveLinesData.get(ml.resId)?.quantId;if(dbQuantId&&quantId!=dbQuantId){offsetByQuant.set(dbQuantId,(offsetByQuant.get(dbQuantId)||0)+dbMoveLinesData.get(ml.resId).quantity);}}
+const offsetByQuantity=new Map();for(const ml of dirtyQuantityMoveLines){offsetByQuantity.set(ml.resId,ml._values.quantity-ml._changes.quantity);}
+for(const quant of quants){const quantityOffest=quant[1].move_line_ids.map((ml)=>offsetByQuantity.get(ml)||0).reduce((val,sum)=>val+sum,0);const quantOffest=offsetByQuant.get(quant[0])||0;this.dirtyQuantsData.set(quant[0],{available_quantity:quant[1].available_quantity+quantityOffest+quantOffest,});}}
+async selectRecord(res_ids){const demand=this.props.record.data.product_uom_qty-
+this.props.record.data.move_line_ids.records.map((ml)=>ml.data.quantity).reduce((val,sum)=>val+sum,0);const params={context:{default_quant_id:res_ids[0]},};if(demand<=0){params.context.default_quantity=0;}else if(this.dirtyQuantsData.has(res_ids[0])){params.context.default_quantity=Math.min(this.dirtyQuantsData.get(res_ids[0]).available_quantity,demand);}
+this.list.addNewRecord(params).then((record)=>{record.dirty=true;});}
+createOpenRecord(){const activeElement=document.activeElement;this.openQuantRecord({context:{...this.props.context,form_view_ref:"stock.view_stock_quant_form",},immediate:true,onClose:()=>{if(activeElement){activeElement.focus();}},});}}
+const smlX2ManyField=__exports.smlX2ManyField={...x2ManyField,component:SMLX2ManyField,};registry.category("fields").add("sml_x2_many",smlX2ManyField);return __exports;});;
+
+/* /stock/static/src/picking_type_dashboard_graph/picking_type_dashboard_graph_field.js */
+odoo.define('@stock/picking_type_dashboard_graph/picking_type_dashboard_graph_field',['@web/core/browser/cookie','@web/core/colors/colors','@web/core/utils/hooks','@web/core/registry','@web/views/fields/journal_dashboard_graph/journal_dashboard_graph_field'],function(require){'use strict';let __exports={};const{cookie}=require("@web/core/browser/cookie");const{getColor,getCustomColor}=require("@web/core/colors/colors");const{useService}=require("@web/core/utils/hooks");const{registry}=require("@web/core/registry");const{JournalDashboardGraphField}=require("@web/views/fields/journal_dashboard_graph/journal_dashboard_graph_field");const PickingTypeDashboardGraphField=__exports.PickingTypeDashboardGraphField=class PickingTypeDashboardGraphField extends JournalDashboardGraphField{setup(){super.setup();this.actionService=useService("action");}
+getBarChartConfig(){const data=[];const labels=[];const backgroundColor=[];const colorPast=getColor(8,cookie.get("color_scheme"));const colorPresent=getColor(16,cookie.get("color_scheme"));const colorFuture=getColor(12,cookie.get("color_scheme"));this.data[0].values.forEach((pt)=>{data.push(pt.value);labels.push(pt.label);if(pt.type==="past"){backgroundColor.push(colorPast);}else if(pt.type==="present"){backgroundColor.push(colorPresent);}else if(pt.type==="future"){backgroundColor.push(colorFuture);}else{backgroundColor.push(getCustomColor(cookie.get("color_scheme"),"#ebebeb","#3C3E4B"));}});return{type:"bar",data:{labels,datasets:[{backgroundColor,data,fill:"start",label:this.data[0].key,},],},options:{onClick:(e)=>{const pickingTypeId=e.chart.config._config.options.pickingTypeId;if(!pickingTypeId){return;}
+const columnIndex=e.chart.tooltip.dataPoints[0].parsed.x;const dateCategories={0:"before",1:"yesterday",2:"today",3:"day_1",4:"day_2",5:"after",};const dateCategory=dateCategories[columnIndex];const additionalContext={picking_type_id:pickingTypeId,search_default_picking_type_id:[pickingTypeId],};additionalContext["search_default_".concat(dateCategory)]=true;this.actionService.doAction("stock.click_dashboard_graph",{additionalContext:additionalContext});},plugins:{legend:{display:false},tooltip:{intersect:false,position:"nearest",caretSize:0,},},scales:{y:{display:false,},x:{display:false,},},pickingTypeId:this.data[0].picking_type_id,maintainAspectRatio:false,elements:{line:{tension:0.000001,},},},};}}
+const pickingTypeDashboardGraphField=__exports.pickingTypeDashboardGraphField={component:PickingTypeDashboardGraphField,supportedTypes:["text"],extractProps:({attrs})=>({graphType:attrs.graph_type,}),};registry.category("fields").add("picking_type_dashboard_graph",pickingTypeDashboardGraphField);return __exports;});;
+
+/* /stock/static/src/stock_forecasted/forecasted_buttons.js */
+odoo.define('@stock/stock_forecasted/forecasted_buttons',['@web/core/l10n/translation','@web/core/utils/hooks','@odoo/owl'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{useService}=require("@web/core/utils/hooks");const{Component}=require("@odoo/owl");const ForecastedButtons=__exports.ForecastedButtons=class ForecastedButtons extends Component{static template="stock.ForecastedButtons";static props={action:Object,resModel:{type:String,optional:true},reloadReport:Function,};setup(){this.actionService=useService("action");this.orm=useService("orm");this.context=this.props.action.context;this.productId=this.context.active_id;this.resModel=this.props.resModel||this.context.active_model||this.context.params?.active_model||'product.template';}
+_onClose(res){return res?.special||this.props.reloadReport();}
+async _onClickReplenish(){const context={...this.context};if(this.resModel==='product.product'){context.default_product_id=this.productId;}else if(this.resModel==='product.template'){context.default_product_tmpl_id=this.productId;}
+context.default_warehouse_id=this.context.warehouse_id;const action={res_model:'product.replenish',name:_t('Product Replenish'),type:'ir.actions.act_window',views:[[false,'form']],target:'new',context:context,};return this.actionService.doAction(action,{onClose:this._onClose.bind(this)});}
+async _onClickUpdateQuantity(){const action=await this.orm.call(this.resModel,"action_update_quantity_on_hand",[[this.productId]]);if(action.res_model==="stock.quant"){action.views=[[false,"list"]];}
+return this.actionService.doAction(action,{onClose:this._onClose.bind(this)});}}
+return __exports;});;
+
+/* /stock/static/src/stock_forecasted/forecasted_details.js */
+odoo.define('@stock/stock_forecasted/forecasted_details',['@web/views/fields/formatters','@web/core/utils/hooks','@odoo/owl'],function(require){'use strict';let __exports={};const{formatFloat}=require("@web/views/fields/formatters");const{useService}=require("@web/core/utils/hooks");const{Component}=require("@odoo/owl");const ForecastedDetails=__exports.ForecastedDetails=class ForecastedDetails extends Component{static template="stock.ForecastedDetails";static props={docs:Object,openView:Function,reloadReport:Function};setup(){this.orm=useService("orm");this.onHandCondition=this.props.docs.lines.length&&!this.props.docs.lines.some((line)=>line.document_in||line.replenishment_filled);this._formatFloat=(num)=>{return formatFloat(num,{digits:this.props.docs.precision});};}
+async _reserve(move_id){await this.orm.call('stock.forecasted_product_product','action_reserve_linked_picks',[move_id],);this.props.reloadReport();}
+async _unreserve(move_id){await this.orm.call('stock.forecasted_product_product','action_unreserve_linked_picks',[move_id],);this.props.reloadReport();}
+async _onClickChangePriority(modelName,record){const value=record.priority=="0"?"1":"0";await this.orm.call(modelName,"write",[[record.id],{priority:value}]);this.props.reloadReport();}
+displayReserve(line){return!line.in_transit&&this.canReserveOperation(line);}
+canReserveOperation(line){return line.move_out?.picking_id;}
+get futureVirtualAvailable(){return this.props.docs.virtual_available+this.props.docs.qty.in-this.props.docs.qty.out;}}
+return __exports;});;
+
+/* /stock/static/src/stock_forecasted/forecasted_header.js */
+odoo.define('@stock/stock_forecasted/forecasted_header',['@web/core/utils/hooks','@web/views/fields/formatters','@odoo/owl'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{formatFloat}=require("@web/views/fields/formatters");const{Component,markup}=require("@odoo/owl");const ForecastedHeader=__exports.ForecastedHeader=class ForecastedHeader extends Component{static template="stock.ForecastedHeader";static props={docs:Object,openView:Function};setup(){this.orm=useService("orm");this.action=useService("action");this._formatFloat=(num)=>formatFloat(num,{digits:this.props.docs.precision});}
+async _onClickInventory(){const context=this._getActionContext();const action=await this.orm.call('stock.quant','action_view_quants',[],{context});if(action.help){action.help=markup(action.help);}
+return this.action.doAction(action);}
+_getActionContext(){const context={...this.context};const templates=this.props.docs.product_templates_ids;if(templates){context.search_default_product_tmpl_id=templates;}else{context.search_default_product_id=this.props.docs.product_variants_ids;}
+return context;}}
+return __exports;});;
+
+/* /stock/static/src/stock_forecasted/forecasted_warehouse_filter.js */
+odoo.define('@stock/stock_forecasted/forecasted_warehouse_filter',['@web/core/dropdown/dropdown','@web/core/dropdown/dropdown_item','@web/core/utils/hooks','@odoo/owl'],function(require){'use strict';let __exports={};const{Dropdown}=require("@web/core/dropdown/dropdown");const{DropdownItem}=require("@web/core/dropdown/dropdown_item");const{useService}=require("@web/core/utils/hooks");const{Component,onWillStart}=require("@odoo/owl");const ForecastedWarehouseFilter=__exports.ForecastedWarehouseFilter=class ForecastedWarehouseFilter extends Component{static template="stock.ForecastedWarehouseFilter";static components={Dropdown,DropdownItem};static props={action:Object,setWarehouseInContext:Function,warehouses:Array};setup(){this.orm=useService("orm");this.context=this.props.action.context;this.warehouses=this.props.warehouses;onWillStart(this.onWillStart)}
+async onWillStart(){this.displayWarehouseFilter=(this.warehouses.length>1);}
+_onSelected(id){this.props.setWarehouseInContext(Number(id));}
+get activeWarehouse(){let warehouseId=null;if(Array.isArray(this.context.warehouse_id)){const validWarehouseIds=this.context.warehouse_id.filter(Number.isInteger);warehouseId=validWarehouseIds.length?validWarehouseIds[0]:null;}else if(Number.isInteger(this.context.warehouse_id)){warehouseId=this.context.warehouse_id;}
+return warehouseId?this.warehouses.find((w)=>w.id==warehouseId):this.warehouses[0];}
+get warehousesItems(){return this.warehouses.map(warehouse=>({id:warehouse.id,label:warehouse.name,onSelected:()=>this._onSelected(warehouse.id),}));}}
+return __exports;});;
+
+/* /stock/static/src/stock_forecasted/stock_forecasted.js */
+odoo.define('@stock/stock_forecasted/stock_forecasted',['@web/core/utils/hooks','@web/core/l10n/translation','@web/core/registry','@web/views/view','@web/search/control_panel/control_panel','@stock/stock_forecasted/forecasted_buttons','@stock/stock_forecasted/forecasted_details','@stock/stock_forecasted/forecasted_header','@stock/stock_forecasted/forecasted_warehouse_filter','@odoo/owl','@web/webclient/actions/action_service'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{_t}=require("@web/core/l10n/translation");const{registry}=require("@web/core/registry");const{View}=require("@web/views/view");const{ControlPanel}=require("@web/search/control_panel/control_panel");const{ForecastedButtons}=require("@stock/stock_forecasted/forecasted_buttons");const{ForecastedDetails}=require("@stock/stock_forecasted/forecasted_details");const{ForecastedHeader}=require("@stock/stock_forecasted/forecasted_header");const{ForecastedWarehouseFilter}=require("@stock/stock_forecasted/forecasted_warehouse_filter");const{Component,onWillStart,useState}=require("@odoo/owl");const{standardActionServiceProps}=require("@web/webclient/actions/action_service");const StockForecasted=__exports.StockForecasted=class StockForecasted extends Component{static template="stock.Forecasted";static components={ControlPanel,ForecastedButtons,ForecastedWarehouseFilter,ForecastedHeader,View,ForecastedDetails,};static props={...standardActionServiceProps};setup(){this.orm=useService("orm");this.action=useService("action");this.context=useState(this.props.action.context);this.productId=this.context.active_id;this.resModel=this.context.active_model;this.title=this.props.action.name||_t("Forecasted Report");if(!this.context.active_id){this.context.active_id=this.props.action.params.active_id;this.reloadReport();}
+this.warehouses=useState([]);onWillStart(this._getReportValues);}
+async _getReportValues(){await this._getResModel();const isTemplate=!this.resModel||this.resModel==='product.template';this.reportModelName=`stock.forecasted_product_${isTemplate ? "template" : "product"}`;this.warehouses.splice(0,this.warehouses.length);this.warehouses.push(...await this.orm.searchRead('stock.warehouse',[],['id','name','code']));if(!this.context.warehouse_id){this.updateWarehouse(this.warehouses[0].id);}
+const reportValues=await this.orm.call(this.reportModelName,"get_report_values",[],{context:this.context,docids:[this.productId],});this.docs={...reportValues.docs,...reportValues.precision,lead_days_date:this.context.lead_days_date,qty_to_order:this.context.qty_to_order,visibility_days_date:this.context.visibility_days_date,qty_to_order_with_visibility_days:this.context.qty_to_order_with_visibility_days};}
+async _getResModel(){this.resModel=this.context.active_model||this.context.params?.active_model;if(!this.resModel){let resModel=this.props.action.res_model;if(resModel){if(/^\d+$/.test(resModel)){const actionModel=await this.orm.read('ir.model',[Number(resModel)],['model']);resModel=actionModel[0]?.model;}
+this.resModel=resModel;}else if(this.props.action._originalAction){const originalContextAction=JSON.parse(this.props.action._originalAction).context;if(typeof originalContextAction==="string"){this.resModel=JSON.parse(originalContextAction.replace(/'/g,'"')).active_model;}else if(originalContextAction){this.resModel=originalContextAction.active_model;}}
+this.context.active_model=this.resModel;}}
+async updateWarehouse(id){const hasPreviousValue=this.context.warehouse_id!==undefined;this.context.warehouse_id=id;if(hasPreviousValue){await this.reloadReport();}}
+async reloadReport(){const actionRequest={id:this.props.action.id,type:"ir.actions.client",tag:"stock_forecasted",context:this.context,name:this.title,};const options={stackPosition:"replaceCurrentAction"};return this.action.doAction(actionRequest,options);}
+get graphDomain(){let warehouseId=null;if(Array.isArray(this.context.warehouse_id)){const validWarehouseIds=this.context.warehouse_id.filter(Number.isInteger);warehouseId=validWarehouseIds.length?validWarehouseIds[0]:null;}else if(Number.isInteger(this.context.warehouse_id)){warehouseId=this.context.warehouse_id;}
+const domain=[["state","=","forecast"],["warehouse_id","=",warehouseId],];if(this.resModel==="product.template"){domain.push(["product_tmpl_id","=",this.productId]);}else if(this.resModel==="product.product"){domain.push(["product_id","=",this.productId]);}
+return domain;}
+get graphInfo(){return{noContentHelp:_t("Try to add some incoming or outgoing transfers.")};}
+async openView(resModel,view,resId){const action={type:"ir.actions.act_window",res_model:resModel,views:[[false,view]],view_mode:view,res_id:resId,};return this.action.doAction(action);}}
+registry.category("actions").add("stock_forecasted",StockForecasted);return __exports;});;
+
+/* /stock/static/src/stock_warehouse_service.js */
+odoo.define('@stock/stock_warehouse_service',['@web/core/registry','@web/core/browser/browser','@web/core/orm_service','@web/core/network/rpc'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{browser}=require("@web/core/browser/browser");const{UPDATE_METHODS}=require("@web/core/orm_service");const{rpcBus}=require("@web/core/network/rpc");registry.category("services").add("stock_warehouse",{dependencies:["action"],start(env,{action}){rpcBus.addEventListener("RPC:RESPONSE",(ev)=>{const{data,error}=ev.detail;const{model,method}=data.params;if(!error&&model==="stock.warehouse"){if(UPDATE_METHODS.includes(method)&&!browser.localStorage.getItem("running_tour")){action.doAction("reload_context");}}});},});return __exports;});;
+
+/* /stock/static/src/views/list/auto_column_width_list_renderer.js */
+odoo.define('@stock/views/list/auto_column_width_list_renderer',['@web/views/list/list_renderer','@odoo/owl'],function(require){'use strict';let __exports={};const{ListRenderer}=require("@web/views/list/list_renderer");const{useEffect}=require("@odoo/owl");const AutoColumnWidthListRenderer=__exports.AutoColumnWidthListRenderer=class AutoColumnWidthListRenderer extends ListRenderer{static props=[...ListRenderer.props];setup(){super.setup();useEffect(()=>{this.keepColumnWidths=false;},()=>[this.columns]);}}
+return __exports;});;
+
+/* /stock/static/src/views/list/inventory_report_list_model.js */
+odoo.define('@stock/views/list/inventory_report_list_model',['@web/core/l10n/translation','@web/model/relational_model/dynamic_record_list','@web/model/relational_model/relational_model'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{DynamicRecordList}=require("@web/model/relational_model/dynamic_record_list");const{RelationalModel}=require("@web/model/relational_model/relational_model");const InventoryReportListModel=__exports.InventoryReportListModel=class InventoryReportListModel extends RelationalModel{setup(params,{action,dialog,notification,rpc,user,view,company}){this._lastCreatedRecordId;return super.setup(...arguments);}
+async _updateSimilarRecords(reloadedRecord,serverValues){if(this.config.isMonoRecord){return;}
+const justCreated=reloadedRecord.id==this._lastCreatedRecordId;if(justCreated&&serverValues.create_date!==serverValues.write_date){this.notification.add(_t("You tried to create a record that already exists. The existing record was modified instead."),{title:_t("This record already exists.")});const duplicateRecords=this.root.records.filter((record)=>record.resId===reloadedRecord.resId&&record.id!==reloadedRecord.id);if(duplicateRecords.length>0){await this.root._removeRecords([reloadedRecord.id]);for(const record of duplicateRecords){record._applyValues(serverValues);}}}else{super._updateSimilarRecords(...arguments)}}}
+const InventoryReportListDynamicRecordList=__exports.InventoryReportListDynamicRecordList=class InventoryReportListDynamicRecordList extends DynamicRecordList{async addNewRecord(){const record=await super.addNewRecord(...arguments);record.model._lastCreatedRecordId=record.id;return record;}}
+InventoryReportListModel.DynamicRecordList=InventoryReportListDynamicRecordList;return __exports;});;
+
+/* /stock/static/src/views/list/inventory_report_list_view.js */
+odoo.define('@stock/views/list/inventory_report_list_view',['@web/views/list/list_view','@stock/views/list/inventory_report_list_model','@web/core/registry'],function(require){'use strict';let __exports={};const{listView}=require("@web/views/list/list_view");const{InventoryReportListModel}=require("@stock/views/list/inventory_report_list_model");const{registry}=require("@web/core/registry");const InventoryReportListView=__exports.InventoryReportListView={...listView,Model:InventoryReportListModel,};registry.category("views").add('inventory_report_list',InventoryReportListView);return __exports;});;
+
+/* /stock/static/src/views/list/stock_report_list_view.js */
+odoo.define('@stock/views/list/stock_report_list_view',['@web/views/list/list_view','@web/core/registry','@stock/views/search/stock_report_search_model','@stock/views/search/stock_report_search_panel'],function(require){'use strict';let __exports={};const{listView}=require('@web/views/list/list_view');const{registry}=require("@web/core/registry");const{StockReportSearchModel}=require("@stock/views/search/stock_report_search_model");const{StockReportSearchPanel}=require("@stock/views/search/stock_report_search_panel");const StockReportListView=__exports.StockReportListView={...listView,SearchModel:StockReportSearchModel,SearchPanel:StockReportSearchPanel,};registry.category("views").add("stock_report_list_view",StockReportListView);return __exports;});;
+
+/* /stock/static/src/views/picking_form/stock_move_one2many.js */
+odoo.define('@stock/views/picking_form/stock_move_one2many',['@web/core/registry','@stock/views/list/auto_column_width_list_renderer','@web/views/fields/x2many/x2many_field'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{AutoColumnWidthListRenderer}=require("@stock/views/list/auto_column_width_list_renderer");const{X2ManyField,x2ManyField}=require("@web/views/fields/x2many/x2many_field");const MovesListRenderer=__exports.MovesListRenderer=class MovesListRenderer extends AutoColumnWidthListRenderer{static recordRowTemplate="stock.MovesListRenderer.RecordRow";processAllColumn(allColumns,list){let cols=super.processAllColumn(...arguments);if(list.resModel==="stock.move"){cols.push({type:'opendetailsop',id:`column_detailOp_${cols.length}`,column_invisible:'parent.state=="draft"',});}
+return cols;}}
+const StockMoveX2ManyField=__exports.StockMoveX2ManyField=class StockMoveX2ManyField extends X2ManyField{static components={...X2ManyField.components,ListRenderer:MovesListRenderer};setup(){super.setup();this.canOpenRecord=true;}
+get isMany2Many(){return false;}
+async openRecord(record){if(this.canOpenRecord&&!record.isNew){const dirty=await record.isDirty();if(await record._parentRecord.isDirty()||(dirty&&'quantity'in record._changes)){await record._parentRecord.save({reload:true});record=record._parentRecord.data[this.props.name].records.find(e=>e.resId===record.resId);if(!record){return;}}}
+return super.openRecord(record);}}
+const stockMoveX2ManyField=__exports.stockMoveX2ManyField={...x2ManyField,component:StockMoveX2ManyField,additionalClasses:[...x2ManyField.additionalClasses||[],"o_field_one2many"],};registry.category("fields").add("stock_move_one2many",stockMoveX2ManyField);return __exports;});;
+
+/* /stock/static/src/views/search/stock_orderpoint_search_model.js */
+odoo.define('@stock/views/search/stock_orderpoint_search_model',['@web/core/utils/hooks','@web/search/search_model','@web/core/utils/timing'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{SearchModel}=require("@web/search/search_model");const{debounce}=require("@web/core/utils/timing");const StockOrderpointSearchModel=__exports.StockOrderpointSearchModel=class StockOrderpointSearchModel extends SearchModel{static DEBOUNCE_DELAY=500;setup(services){super.setup(services);this.ui=useService("ui");this.applyGlobalVisibilityDays=debounce(this.applyGlobalVisibilityDays.bind(this),StockOrderpointSearchModel.DEBOUNCE_DELAY);}
+async applyGlobalVisibilityDays(globalVisibilityDays){this.ui.block();this.globalContext={...this.globalContext,global_visibility_days:globalVisibilityDays,};this._context=false;await this.orm.call("stock.warehouse.orderpoint","action_open_orderpoints",[],{context:this.context,});await this._fetchSections(this.categories,this.filters);this._notify();this.ui.unblock();}}
+return __exports;});;
+
+/* /stock/static/src/views/search/stock_orderpoint_search_panel.js */
+odoo.define('@stock/views/search/stock_orderpoint_search_panel',['@web/core/utils/hooks','@odoo/owl','@web/search/search_panel/search_panel'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{onWillStart,useState}=require('@odoo/owl');const{SearchPanel}=require("@web/search/search_panel/search_panel");const StockOrderpointSearchPanel=__exports.StockOrderpointSearchPanel=class StockOrderpointSearchPanel extends SearchPanel{static template="stock.StockOrderpointSearchPanel";setup(){this.orm=useService("orm");super.setup(...arguments);this.globalVisibilityDays=useState({value:0});this.state.sidebarExpanded=false;onWillStart(this.getVisibilityParameter);}
+async getVisibilityParameter(){let res=await this.orm.call("stock.warehouse.orderpoint","get_visibility_days",[]);this.globalVisibilityDays.value=Math.abs(parseInt(res))||0;}
+async applyGlobalVisibilityDays(ev){this.globalVisibilityDays.value=Math.max(parseInt(ev.target.value),0);await this.env.searchModel.applyGlobalVisibilityDays(this.globalVisibilityDays.value);}}
+return __exports;});;
+
+/* /stock/static/src/views/search/stock_report_search_model.js */
+odoo.define('@stock/views/search/stock_report_search_model',['@web/search/search_model'],function(require){'use strict';let __exports={};const{SearchModel}=require("@web/search/search_model");const StockReportSearchModel=__exports.StockReportSearchModel=class StockReportSearchModel extends SearchModel{async load(){await super.load(...arguments);await this._loadWarehouses();}
+getWarehouses(){return this.warehouses;}
+async _loadWarehouses(){this.warehouses=await this.orm.call('stock.warehouse','get_current_warehouses',[[]],{context:this.context},);}
+clearWarehouseContext(){delete this.globalContext.warehouse_id;this._notify();}
+applyWarehouseContext(warehouse_id){this.globalContext['warehouse_id']=warehouse_id;this._notify();}}
+return __exports;});;
+
+/* /stock/static/src/views/search/stock_report_search_panel.js */
+odoo.define('@stock/views/search/stock_report_search_panel',['@web/search/search_panel/search_panel'],function(require){'use strict';let __exports={};const{SearchPanel}=require("@web/search/search_panel/search_panel");const StockReportSearchPanel=__exports.StockReportSearchPanel=class StockReportSearchPanel extends SearchPanel{static template="stock.StockReportSearchPanel";setup(){super.setup(...arguments);this.selectedWarehouse=false;}
+get warehouses(){return this.env.searchModel.getWarehouses();}
+clearWarehouseContext(){this.env.searchModel.clearWarehouseContext();this.selectedWarehouse=null;}
+applyWarehouseContext(warehouse_id){this.env.searchModel.applyWarehouseContext(warehouse_id);this.selectedWarehouse=warehouse_id;}}
+return __exports;});;
+
+/* /stock/static/src/views/stock_empty_list_help.js */
+odoo.define('@stock/views/stock_empty_list_help',['@web/core/registry','@web/views/list/list_view','@web/views/list/list_renderer','@odoo/owl','@web/views/view_hook'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{listView}=require("@web/views/list/list_view");const{ListRenderer}=require("@web/views/list/list_renderer");const{Component}=require("@odoo/owl");const{useActionLinks}=require("@web/views/view_hook");const StockActionHelper=__exports.StockActionHelper=class StockActionHelper extends Component{static template="stock.StockActionHelper";static props=["noContentHelp"];setup(){const resModel="searchModel"in this.env?this.env.searchModel.resModel:undefined;this.handler=useActionLinks(resModel);}}
+const StockListRenderer=__exports.StockListRenderer=class StockListRenderer extends ListRenderer{static template="stock.StockListRenderer";static components={...StockListRenderer.components,StockActionHelper,};}
+const StockListView=__exports.StockListView={...listView,Renderer:StockListRenderer,};registry.category("views").add("stock_list_view",StockListView);return __exports;});;
+
+/* /stock/static/src/views/stock_orderpoint_list_controller.js */
+odoo.define('@stock/views/stock_orderpoint_list_controller',['@web/views/list/list_controller','@web/core/dropdown/dropdown','@web/core/dropdown/dropdown_item'],function(require){'use strict';let __exports={};const{ListController}=require('@web/views/list/list_controller');const{Dropdown}=require("@web/core/dropdown/dropdown");const{DropdownItem}=require("@web/core/dropdown/dropdown_item");const StockOrderpointListController=__exports.StockOrderpointListController=class StockOrderpointListController extends ListController{static template="stock.StockOrderpoint.listView";static components={...super.components,Dropdown,DropdownItem,}
+async onClickOrder(force_to_max){const resIds=await this.getSelectedResIds();const action=await this.model.orm.call(this.props.resModel,'action_replenish',[resIds],{context:this.props.context,force_to_max:force_to_max,});if(action){await this.actionService.doAction(action);}
+return this.actionService.doAction('stock.action_replenishment',{stackPosition:'replaceCurrentAction',});}
+async onClickSnooze(){const resIds=await this.getSelectedResIds();this.actionService.doAction('stock.action_orderpoint_snooze',{additionalContext:{default_orderpoint_ids:resIds},onClose:()=>{this.actionService.doAction('stock.action_replenishment',{stackPosition:'replaceCurrentAction',});}});}}
+return __exports;});;
+
+/* /stock/static/src/views/stock_orderpoint_list_view.js */
+odoo.define('@stock/views/stock_orderpoint_list_view',['@web/views/list/list_view','@web/core/registry','@stock/views/stock_orderpoint_list_controller','@stock/views/search/stock_orderpoint_search_panel','@stock/views/search/stock_orderpoint_search_model'],function(require){'use strict';let __exports={};const{listView}=require('@web/views/list/list_view');const{registry}=require("@web/core/registry");const{StockOrderpointListController:Controller}=require("@stock/views/stock_orderpoint_list_controller");const{StockOrderpointSearchPanel}=require("@stock/views/search/stock_orderpoint_search_panel");const{StockOrderpointSearchModel}=require("@stock/views/search/stock_orderpoint_search_model");const StockOrderpointListView=__exports.StockOrderpointListView={...listView,Controller,SearchPanel:StockOrderpointSearchPanel,SearchModel:StockOrderpointSearchModel,};registry.category("views").add("stock_orderpoint_list",StockOrderpointListView);return __exports;});;
+
+/* /stock/static/src/widgets/counted_quantity_widget.js */
+odoo.define('@stock/widgets/counted_quantity_widget',['@web/views/fields/float/float_field','@web/core/registry','@web/core/hotkeys/hotkey_service','@odoo/owl'],function(require){'use strict';let __exports={};const{FloatField,floatField}=require("@web/views/fields/float/float_field");const{registry}=require("@web/core/registry");const{getActiveHotkey}=require("@web/core/hotkeys/hotkey_service");const{useEffect,useRef}=require("@odoo/owl");const CountedQuantityWidgetField=__exports.CountedQuantityWidgetField=class CountedQuantityWidgetField extends FloatField{setup(){super.setup();const inputRef=useRef("numpadDecimal");useEffect((inputEl)=>{if(inputEl){const boundOnInput=this.onInput.bind(this);const boundOnKeydown=this.onKeydown.bind(this);const boundOnBlur=this.onBlur.bind(this);inputEl.addEventListener("input",boundOnInput);inputEl.addEventListener("keydown",boundOnKeydown);inputEl.addEventListener("blur",boundOnBlur);return()=>{inputEl.removeEventListener("input",boundOnInput);inputEl.removeEventListener("keydown",boundOnKeydown);inputEl.removeEventListener("blur",boundOnBlur);};}},()=>[inputRef.el]);}
+onInput(ev){return this.props.record.update({inventory_quantity_set:true});}
+updateValue(ev){try{const val=this.parse(ev.target.value);this.props.record.update({[this.props.name]:val});}catch{}}
+onBlur(ev){if(!this.props.record.data.inventory_quantity_set){return;}
+this.updateValue(ev);}
+onKeydown(ev){const hotkey=getActiveHotkey(ev);if(["enter","tab","shift+tab"].includes(hotkey)){this.updateValue(ev);this.onInput(ev);}}
+get formattedValue(){if(this.props.readonly&&!this.props.record.data[this.props.name]&!this.props.record.data.inventory_quantity_set){return"";}
+return super.formattedValue;}}
+const countedQuantityWidgetField=__exports.countedQuantityWidgetField={...floatField,component:CountedQuantityWidgetField,};registry.category("fields").add("counted_quantity_widget",countedQuantityWidgetField);return __exports;});;
+
+/* /stock/static/src/widgets/forecast_widget.js */
+odoo.define('@stock/widgets/forecast_widget',['@web/views/fields/float/float_field','@web/core/l10n/dates','@web/views/fields/formatters','@web/core/registry','@web/core/utils/hooks'],function(require){'use strict';let __exports={};const{FloatField,floatField}=require("@web/views/fields/float/float_field");const{formatDate}=require("@web/core/l10n/dates");const{formatFloat}=require("@web/views/fields/formatters");const{registry}=require("@web/core/registry");const{useService}=require("@web/core/utils/hooks");const ForecastWidgetField=__exports.ForecastWidgetField=class ForecastWidgetField extends FloatField{static template="stock.ForecastWidget";setup(){const{data,fields,resId}=this.props.record;this.actionService=useService("action");this.orm=useService("orm");this.resId=resId;this.reservedAvailability=formatFloat(data.quantity,{...fields.quantity,...this.nodeOptions,});this.forecastExpectedDate=formatDate(data.forecast_expected_date,fields.forecast_expected_date);if(data.forecast_expected_date&&data.date_deadline){this.forecastIsLate=data.forecast_expected_date>data.date_deadline;}
+const digits=fields.forecast_availability.digits;const options={digits,thousandsSep:"",decimalPoint:"."};const forecast_availability=parseFloat(formatFloat(data.forecast_availability,options));const product_qty=parseFloat(formatFloat(data.product_qty,options));this.willBeFulfilled=forecast_availability>=product_qty;this.state=data.state;}
+async _openReport(ev){ev.preventDefault();ev.stopPropagation();if(!this.resId){return;}
+const action=await this.orm.call("stock.move","action_product_forecast_report",[this.resId,]);this.actionService.doAction(action);}}
+const forecastWidgetField=__exports.forecastWidgetField={...floatField,component:ForecastWidgetField,};registry.category("fields").add("forecast_widget",forecastWidgetField);return __exports;});;
+
+/* /stock/static/src/widgets/generate_serial.js */
+odoo.define('@stock/widgets/generate_serial',['@web/core/l10n/translation','@web/core/orm_service','@web/core/dialog/dialog','@web/core/utils/hooks','@web/core/registry','@web/views/fields/parsers','@web/model/relational_model/utils','@odoo/owl','@web/views/widgets/standard_widget_props'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{x2ManyCommands}=require("@web/core/orm_service");const{Dialog}=require('@web/core/dialog/dialog');const{useService}=require("@web/core/utils/hooks");const{registry}=require("@web/core/registry");const{parseInteger}=require("@web/views/fields/parsers");const{getId}=require("@web/model/relational_model/utils");const{Component,useRef,onMounted}=require("@odoo/owl");const{standardWidgetProps}=require("@web/views/widgets/standard_widget_props");const GenerateDialog=__exports.GenerateDialog=class GenerateDialog extends Component{static template="stock.generate_serial_dialog";static components={Dialog};static props={mode:{type:String},move:{type:Object},close:{type:Function},};setup(){this.size='md';if(this.props.mode==='generate'){this.title=this.props.move.data.has_tracking==='lot'?_t("Generate Lot numbers"):_t("Generate Serial numbers");}else{this.title=this.props.move.data.has_tracking==='lot'?_t("Import Lots"):_t("Import Serials");}
+this.nextSerial=useRef('nextSerial');this.nextSerialCount=useRef('nextSerialCount');this.totalReceived=useRef('totalReceived');this.keepLines=useRef('keepLines');this.lots=useRef('lots');this.orm=useService("orm");onMounted(()=>{if(this.props.mode==='generate'){this.nextSerialCount.el.value=this.props.move.data.product_uom_qty||2;if(this.props.move.data.has_tracking==='lot'){this.totalReceived.el.value=this.props.move.data.quantity;}}});}
+async _onGenerate(){let count;let qtyToProcess;if(this.props.move.data.has_tracking==='lot'){count=parseFloat(this.nextSerialCount.el?.value||'0');qtyToProcess=parseFloat(this.totalReceived.el?.value||this.props.move.data.product_qty);}else{count=parseInteger(this.nextSerialCount.el?.value||'0');qtyToProcess=this.props.move.data.product_qty;}
+const move_line_vals=await this.orm.call("stock.move","action_generate_lot_line_vals",[{...this.props.move.context,default_product_id:this.props.move.data.product_id[0],default_location_dest_id:this.props.move.data.location_dest_id[0],default_location_id:this.props.move.data.location_id[0],default_tracking:this.props.move.data.has_tracking,default_quantity:qtyToProcess,},this.props.mode,this.nextSerial.el?.value,count,this.lots.el?.value,]);const newlines=[];let lines=[]
+lines=this.props.move.data.move_line_ids;for(const values of move_line_vals){newlines.push(lines._createRecordDatapoint(values,{mode:'readonly',virtualId:getId("virtual"),manuallyAdded:false,}));}
+if(!this.keepLines.el.checked){await lines._applyCommands(lines._currentIds.map((currentId)=>[x2ManyCommands.DELETE,currentId,]));}
+lines.records.push(...newlines);lines._commands.push(...newlines.map((record)=>[x2ManyCommands.CREATE,record._virtualId,]));lines._currentIds.push(...newlines.map((record)=>record._virtualId));await lines._onUpdate();this.props.close();}}
+class GenerateSerials extends Component{static template="stock.GenerateSerials";static props={...standardWidgetProps};setup(){this.dialog=useService("dialog");}
+openDialog(ev){this.dialog.add(GenerateDialog,{move:this.props.record,mode:'generate',});}}
+class ImportLots extends Component{static template="stock.ImportLots";static props={...standardWidgetProps};setup(){this.dialog=useService("dialog");}
+openDialog(ev){this.dialog.add(GenerateDialog,{move:this.props.record,mode:'import',});}}
+registry.category("view_widgets").add("import_lots",{component:ImportLots});registry.category("view_widgets").add("generate_serials",{component:GenerateSerials});return __exports;});;
+
+/* /stock/static/src/widgets/json_widget.js */
+odoo.define('@stock/widgets/json_widget',['@web/core/registry','@web/core/l10n/translation','@web/core/user','@odoo/owl','@web/views/fields/standard_field_props'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{_t}=require("@web/core/l10n/translation");const{user}=require("@web/core/user");const{Component,onWillStart}=require("@odoo/owl");const{standardFieldProps}=require("@web/views/fields/standard_field_props");const JsonPopOver=__exports.JsonPopOver=class JsonPopOver extends Component{static template="";static props={...standardFieldProps};get jsonValue(){return JSON.parse(this.props.record.data[this.props.name]);}}
+const jsonPopOver=__exports.jsonPopOver={component:JsonPopOver,displayName:_t("Json Popup"),supportedTypes:["char"],};const PopOverLeadDays=__exports.PopOverLeadDays=class PopOverLeadDays extends JsonPopOver{static template="stock.leadDays";setup(){super.setup();onWillStart(async()=>{this.displayUOM=await user.hasGroup("uom.group_uom");});}
+get qtyForecast(){return this._formatQty("qty_forecast");}
+get qtyToOrder(){return this._formatQty("qty_to_order");}
+get productMaxQty(){return this._formatQty("product_max_qty");}
+get productMinQty(){return this._formatQty("product_min_qty");}
+_formatQty(field){return this.displayUOM?`${this.jsonValue[field]} ${this.jsonValue.product_uom_name}`:this.jsonValue[field];}}
+const popOverLeadDays=__exports.popOverLeadDays={...jsonPopOver,component:PopOverLeadDays,};registry.category("fields").add("lead_days_widget",popOverLeadDays);const ReplenishmentHistoryWidget=__exports.ReplenishmentHistoryWidget=class ReplenishmentHistoryWidget extends JsonPopOver{static template="stock.replenishmentHistory";}
+const replenishmentHistoryWidget=__exports.replenishmentHistoryWidget={...jsonPopOver,component:ReplenishmentHistoryWidget,};registry.category("fields").add("replenishment_history_widget",replenishmentHistoryWidget);return __exports;});;
+
+/* /stock/static/src/widgets/popover_widget.js */
+odoo.define('@stock/widgets/popover_widget',['@web/core/registry','@web/core/popover/popover_hook','@odoo/owl','@web/views/fields/standard_field_props'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{usePopover}=require("@web/core/popover/popover_hook");const{Component}=require("@odoo/owl");const{standardFieldProps}=require("@web/views/fields/standard_field_props");const PopoverComponent=__exports.PopoverComponent=class PopoverComponent extends Component{static template="stock.popoverContent";static props=["record","*"];}
+const PopoverWidgetField=__exports.PopoverWidgetField=class PopoverWidgetField extends Component{static template="stock.popoverButton";static components={Popover:PopoverComponent};static props={...standardFieldProps};setup(){let fieldValue=this.props.record.data[this.props.name];this.jsonValue=JSON.parse(fieldValue||"{}");const position=this.jsonValue.position||"top";this.popover=usePopover(this.constructor.components.Popover,{position});this.color=this.jsonValue.color||'text-primary';this.icon=this.jsonValue.icon||'fa-info-circle';}
+showPopup(ev){this.popover.open(ev.currentTarget,{...this.jsonValue,record:this.props.record});}}
+const popoverWidgetField=__exports.popoverWidgetField={component:PopoverWidgetField,supportedTypes:['char'],};registry.category("fields").add("popover_widget",popoverWidgetField);return __exports;});;
+
+/* /stock/static/src/widgets/stock_pick_from.js */
+odoo.define('@stock/widgets/stock_pick_from',['@web/core/registry','@web/views/fields/many2one/many2one_field'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{Many2OneField,many2OneField}=require("@web/views/fields/many2one/many2one_field");const StockPickFrom=__exports.StockPickFrom=class StockPickFrom extends Many2OneField{get displayName(){return super.displayName||this._quant_display_name();}
+get value(){return super.value||[0,this._quant_display_name()];}
+_quant_display_name(){let name_parts=[];const data=this.props.record.data;name_parts.push(data.location_id?.[1])
+if(data.lot_id){name_parts.push(data.lot_id?.[1]||data.lot_name)}
+if(data.package_id){name_parts.push(data.package_id?.[1])}
+if(data.owner){name_parts.push(data.owner?.[1])}
+const result=name_parts.join(" - ");if(result)return result;return"";}}
+const stockPickFrom=__exports.stockPickFrom={...many2OneField,component:StockPickFrom,fieldDependencies:[...(many2OneField.fieldDependencies||[]),{name:"location_id",type:"relation"},{name:"location_dest_id",type:"relation"},{name:"package_id",type:"relation"},{name:"owner_id",type:"relation"},],};registry.category("fields").add("pick_from",stockPickFrom);return __exports;});;
+
+/* /stock/static/src/widgets/stock_rescheduling_popover.js */
+odoo.define('@stock/widgets/stock_rescheduling_popover',['@web/core/utils/hooks','@web/core/registry','@stock/widgets/popover_widget'],function(require){'use strict';let __exports={};const{useService}=require("@web/core/utils/hooks");const{registry}=require("@web/core/registry");const{PopoverComponent,PopoverWidgetField,popoverWidgetField,}=require("@stock/widgets/popover_widget");const StockRescheculingPopoverComponent=__exports.StockRescheculingPopoverComponent=class StockRescheculingPopoverComponent extends PopoverComponent{setup(){this.action=useService("action");}
+openElement(ev){this.action.doAction({res_model:ev.currentTarget.getAttribute('element-model'),res_id:parseInt(ev.currentTarget.getAttribute('element-id')),views:[[false,"form"]],type:"ir.actions.act_window",view_mode:"form",});}}
+const StockRescheculingPopover=__exports.StockRescheculingPopover=class StockRescheculingPopover extends PopoverWidgetField{static components={Popover:StockRescheculingPopoverComponent};setup(){super.setup();this.color=this.jsonValue.color||'text-danger';this.icon=this.jsonValue.icon||'fa-exclamation-triangle';}
+showPopup(ev){if(!this.jsonValue.late_elements){return;}
+super.showPopup(ev);}}
+registry.category("fields").add("stock_rescheduling_popover",{...popoverWidgetField,component:StockRescheculingPopover,});return __exports;});;
+
 /* /payment/static/src/js/payment_wizard_copy_clipboard_field.js */
 odoo.define('@payment/js/payment_wizard_copy_clipboard_field',['@web/core/registry','@web/views/fields/copy_clipboard/copy_clipboard_field','@web/core/copy_button/copy_button'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{copyClipboardButtonField,CopyClipboardButtonField,}=require("@web/views/fields/copy_clipboard/copy_clipboard_field");const{CopyButton}=require("@web/core/copy_button/copy_button");class PaymentWizardCopyButton extends CopyButton{async onClick(){await this.env.model.mutex.getUnlockedDef();return super.onClick();}}
 class PaymentWizardCopyClipboardButtonField extends CopyClipboardButtonField{static components={CopyButton:PaymentWizardCopyButton};}
@@ -21029,6 +21412,18 @@ const fieldVideoPreview=__exports.fieldVideoPreview={component:FieldVideoPreview
 
 /* /website_sale/static/src/js/tours/website_sale_shop.js */
 odoo.define('@website_sale/js/tours/website_sale_shop',['@web/core/l10n/translation','@website/js/tours/tour_utils','@odoo/owl'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{insertSnippet,goBackToBlocks,registerWebsitePreviewTour,}=require('@website/js/tours/tour_utils');const{markup}=require("@odoo/owl");registerWebsitePreviewTour("test_01_admin_shop_tour",{url:'/shop',},()=>[{trigger:":iframe .js_sale",},{trigger:".o_menu_systray .o_new_content_container > a",content:_t("Let's create your first product."),tooltipPosition:"bottom",run:"click",},{trigger:"a[data-module-xml-id='base.module_website_sale']",content:markup(_t("Select <b>New Product</b> to create it and manage its properties to boost your sales.")),tooltipPosition:"bottom",run:"click",},{trigger:".modal-dialog input[type=text]",content:_t("Enter a name for your new product"),tooltipPosition:"left",run:"edit Test",},{trigger:".modal-footer button.btn-primary",content:markup(_t("Click on <em>Save</em> to create the product.")),tooltipPosition:"right",run:"click",},{trigger:"#oe_snippets.o_loaded",},{trigger:":iframe .product_price .oe_currency_value:visible",content:_t("Edit the price of this product by clicking on the amount."),tooltipPosition:"bottom",run:"editor 1.99",timeout:30000,},{trigger:":iframe .product_price .o_dirty .oe_currency_value:not(:contains(/^1.00$/))",},{trigger:":iframe #wrap img.product_detail_img",content:_t("Double click here to set an image describing your product."),tooltipPosition:"top",run:"dblclick",},{isActive:["auto"],trigger:".o_select_media_dialog .o_upload_media_button",content:_t("Upload a file from your local library."),tooltipPosition:"bottom",run:"click .modal-footer .btn-secondary",},goBackToBlocks(),{trigger:"body:not(.modal-open)",},...insertSnippet({id:"s_text_image",name:"Text - Image",groupName:"Content",}),{trigger:".o_we_external_history_buttons button.fa-undo:not([disabled])",},{trigger:"button[data-action=save]",content:markup(_t("Once you click on <b>Save</b>, your product is updated.")),tooltipPosition:"bottom",run:"click",},{trigger:":iframe body:not(.editor_enable)",},{trigger:".o_menu_systray_item.o_website_publish_container a",content:_t("Click on this button so your customers can see it."),tooltipPosition:"bottom",run:"click",},{trigger:"button[data-menu-xmlid='website.menu_reporting']",content:_t("Click here to open the reporting menu"),tooltipPosition:"bottom",run:"click",},{trigger:"a[data-menu-xmlid='website.menu_website_dashboard'], a[data-menu-xmlid='website.menu_website_analytics']",content:_t("Let's now take a look at your eCommerce dashboard to get your eCommerce website ready in no time."),tooltipPosition:"bottom",}]);return __exports;});;
+
+/* /stock_account/static/src/fields/boolean_confirm.js */
+odoo.define('@stock_account/fields/boolean_confirm',['@web/core/l10n/translation','@web/core/registry','@web/core/utils/hooks','@web/core/checkbox/checkbox','@web/core/confirmation_dialog/confirmation_dialog','@web/views/fields/boolean_toggle/boolean_toggle_field'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{registry}=require('@web/core/registry');const{useService}=require("@web/core/utils/hooks");const{CheckBox}=require("@web/core/checkbox/checkbox");const{ConfirmationDialog}=require("@web/core/confirmation_dialog/confirmation_dialog");const{BooleanToggleField,booleanToggleField,}=require("@web/views/fields/boolean_toggle/boolean_toggle_field");const ConfirmCheckBox=__exports.ConfirmCheckBox=class ConfirmCheckBox extends CheckBox{onClick(ev){ev.preventDefault();if(ev.target.tagName!=="INPUT"){return;}
+this.props.onChange(ev.target.checked);}}
+const BooleanToggleConfirm=__exports.BooleanToggleConfirm=class BooleanToggleConfirm extends BooleanToggleField{static template="stock_account.BooleanToggleConfirm";static components={ConfirmCheckBox};setup(){super.setup();this.dialogService=useService('dialog');}
+onChange(value){const record=this.props.record.data;const updateAndSave=()=>{this.props.record.update({[this.props.name]:value},{save:true});};if(record.lot_valuated&&!value){this.dialogService.add(ConfirmationDialog,{body:_t("This operation might lead in a loss of data. Valuation will be identical for all lots/SN. Do you want to proceed ? "),confirm:updateAndSave,cancel:()=>{},});}
+else{updateAndSave();}}}
+const booleanToggleConfirm=__exports.booleanToggleConfirm={...booleanToggleField,component:BooleanToggleConfirm,};registry.category("fields").add("confirm_boolean",booleanToggleConfirm);return __exports;});;
+
+/* /stock_account/static/src/stock_account_forecasted/forecasted_header.js */
+odoo.define('@stock_account/stock_account_forecasted/forecasted_header',['@web/core/l10n/translation','@web/core/utils/patch','@stock/stock_forecasted/forecasted_header'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{patch}=require("@web/core/utils/patch");const{ForecastedHeader:Parent}=require("@stock/stock_forecasted/forecasted_header");const StockAccountForecastedHeader=__exports.StockAccountForecastedHeader=class StockAccountForecastedHeader extends Parent{static template="stock_account.ForecastedHeader";}
+patch(Parent.prototype,{async _onClickValuation(){const context=this._getActionContext();return this.action.doAction({name:_t('Stock Valuation'),res_model:'stock.valuation.layer',type:'ir.actions.act_window',view_mode:'list,form',views:[[false,'list'],[false,'form']],target:'current',context:context,});}});return __exports;});;
 
 /* /iap/static/src/action_buttons_widget/action_buttons_widget.js */
 odoo.define('@iap/action_buttons_widget/action_buttons_widget',['@web/core/registry','@web/core/utils/hooks','@web/views/widgets/standard_widget_props','@odoo/owl'],function(require){'use strict';let __exports={};const{registry}=require("@web/core/registry");const{useService}=require("@web/core/utils/hooks");const{standardWidgetProps}=require("@web/views/widgets/standard_widget_props");const{Component}=require("@odoo/owl");class IAPActionButtonsWidget extends Component{static template="iap.ActionButtonsWidget";static props={...standardWidgetProps,serviceName:String,showServiceButtons:Boolean,};setup(){this.orm=useService("orm");this.action=useService("action");}
@@ -21315,6 +21710,31 @@ const base_lines_aggregated_values=this.aggregate_base_lines_tax_details(base_li
 const key=JSON.stringify({l10n_in_hsn_code:grouping_key.l10n_in_hsn_code,uom_name:grouping_key.uom_name,rate:grouping_key.rate,});const item=items_map[key];const l10n_in_tax_type=grouping_key.l10n_in_tax_type;item[`tax_amount_${l10n_in_tax_type}`]+=values.tax_amount_currency;l10n_in_tax_types.add(l10n_in_tax_type);}
 const items=[];for(const values of Object.values(items_map)){const item={...values.key,...values};delete item.key;items.push(item);}
 return{has_igst:l10n_in_tax_types.has("igst"),has_gst:l10n_in_tax_types.has("cgst")||l10n_in_tax_types.has("sgst"),has_cess:l10n_in_tax_types.has("cess"),nb_columns:5+l10n_in_tax_types.size,display_uom:display_uom,items:items,};}});return __exports;});;
+
+/* /sale_stock/static/src/product_catalog/kanban_record.js */
+odoo.define('@sale_stock/product_catalog/kanban_record',['@product/product_catalog/kanban_record','@sale_stock/product_catalog/sale_order_line/sale_order_line','@web/core/utils/patch'],function(require){'use strict';let __exports={};const{ProductCatalogKanbanRecord}=require("@product/product_catalog/kanban_record");const{ProductCatalogSaleOrderLine}=require("@sale_stock/product_catalog/sale_order_line/sale_order_line");const{patch}=require("@web/core/utils/patch");patch(ProductCatalogKanbanRecord.prototype,{updateQuantity(quantity){if(this.env.orderResModel!=="sale.order"||this.productCatalogData.productType=="service"){super.updateQuantity(...arguments);}else if(this.productCatalogData.quantity===this.productCatalogData.deliveredQty&&quantity<this.productCatalogData.quantity){this.props.record.load();this.props.record.model.notify();}else{super.updateQuantity(Math.max(quantity,this.productCatalogData.deliveredQty));}},get orderLineComponent(){if(this.env.orderResModel==="sale.order"){return ProductCatalogSaleOrderLine;}
+return super.orderLineComponent;},});return __exports;});;
+
+/* /sale_stock/static/src/product_catalog/sale_order_line/sale_order_line.js */
+odoo.define('@sale_stock/product_catalog/sale_order_line/sale_order_line',['@web/core/l10n/translation','@product/product_catalog/order_line/order_line'],function(require){'use strict';let __exports={};const{_t}=require("@web/core/l10n/translation");const{ProductCatalogOrderLine}=require("@product/product_catalog/order_line/order_line");const ProductCatalogSaleOrderLine=__exports.ProductCatalogSaleOrderLine=class ProductCatalogSaleOrderLine extends ProductCatalogOrderLine{static props={...ProductCatalogOrderLine.props,deliveredQty:Number,}
+get disableRemove(){return this.props.quantity===this.props.deliveredQty;}
+get disabledButtonTooltip(){if(this.disableRemove){return _t("The ordered quantity cannot be decreased below the amount already delivered. Instead, create a return in your inventory.");}
+return super.disabledButtonTooltip;}}
+return __exports;});;
+
+/* /sale_stock/static/src/sale_stock_forecasted/forecasted_details.js */
+odoo.define('@sale_stock/sale_stock_forecasted/forecasted_details',['@web/views/fields/formatters','@web/core/utils/patch','@stock/stock_forecasted/forecasted_details'],function(require){'use strict';let __exports={};const{formatMonetary}=require("@web/views/fields/formatters");const{patch}=require("@web/core/utils/patch");const{ForecastedDetails}=require("@stock/stock_forecasted/forecasted_details");patch(ForecastedDetails.prototype,{_formatMonetary(num,currencyId){return formatMonetary(num,{currencyId:currencyId});}});return __exports;});;
+
+/* /sale_stock/static/src/widgets/qty_at_date_widget.js */
+odoo.define('@sale_stock/widgets/qty_at_date_widget',['@web/core/l10n/dates','@web/core/l10n/localization','@web/core/registry','@web/core/utils/hooks','@web/core/popover/popover_hook','@odoo/owl','@web/views/widgets/standard_widget_props'],function(require){'use strict';let __exports={};const{formatDateTime}=require("@web/core/l10n/dates");const{localization}=require("@web/core/l10n/localization");const{registry}=require("@web/core/registry");const{useService}=require("@web/core/utils/hooks");const{usePopover}=require("@web/core/popover/popover_hook");const{Component,onWillRender}=require("@odoo/owl");const{standardWidgetProps}=require("@web/views/widgets/standard_widget_props");const QtyAtDatePopover=__exports.QtyAtDatePopover=class QtyAtDatePopover extends Component{static template="sale_stock.QtyAtDatePopover";static props={record:Object,calcData:Object,close:Function,};setup(){this.actionService=useService("action");}
+openForecast(){this.actionService.doAction("stock.stock_forecasted_product_product_action",{additionalContext:{active_model:'product.product',active_id:this.props.record.data.product_id[0],warehouse_id:this.props.record.data.warehouse_id&&this.props.record.data.warehouse_id[0],move_to_match_ids:this.props.record.data.move_ids.records.map(record=>record.resId),sale_line_to_match_id:this.props.record.resId,},});}}
+const QtyAtDateWidget=__exports.QtyAtDateWidget=class QtyAtDateWidget extends Component{static components={Popover:QtyAtDatePopover};static template="sale_stock.QtyAtDate";static props={...standardWidgetProps};setup(){this.popover=usePopover(this.constructor.components.Popover,{position:"top"});this.calcData={};onWillRender(()=>{this.initCalcData();})}
+initCalcData(){const{data}=this.props.record;if(data.scheduled_date){if(data.state==='sale'){this.calcData.will_be_fulfilled=data.free_qty_today>=data.qty_to_deliver;}else{this.calcData.will_be_fulfilled=data.virtual_available_at_date>=data.qty_to_deliver;}
+this.calcData.will_be_late=data.forecast_expected_date&&data.forecast_expected_date>data.scheduled_date;if(['draft','sent'].includes(data.state)){this.calcData.forecasted_issue=!this.calcData.will_be_fulfilled&&!data.is_mto;}else{this.calcData.forecasted_issue=!this.calcData.will_be_fulfilled||this.calcData.will_be_late;}}}
+updateCalcData(){const{data}=this.props.record;if(!data.scheduled_date){return;}
+this.calcData.delivery_date=formatDateTime(data.scheduled_date,{format:localization.dateFormat});if(data.forecast_expected_date){this.calcData.forecast_expected_date_str=formatDateTime(data.forecast_expected_date,{format:localization.dateFormat});}}
+showPopup(ev){this.updateCalcData();this.popover.open(ev.currentTarget,{record:this.props.record,calcData:this.calcData,});}}
+const qtyAtDateWidget=__exports.qtyAtDateWidget={component:QtyAtDateWidget,};registry.category("view_widgets").add("qty_at_date_widget",qtyAtDateWidget);return __exports;});;
 
 /* /partner_autocomplete/static/src/js/partner_autocomplete_component.js */
 odoo.define('@partner_autocomplete/js/partner_autocomplete_component',['@web/core/autocomplete/autocomplete'],function(require){'use strict';let __exports={};const{AutoComplete}=require("@web/core/autocomplete/autocomplete");const PartnerAutoComplete=__exports.PartnerAutoComplete=class PartnerAutoComplete extends AutoComplete{static template="partner_autocomplete.PartnerAutoComplete";setup(){super.setup();this.shouldSearchWorldwide=false;}
@@ -36445,6 +36865,710 @@ registerTemplate("website.prompt", `/website/static/src/xml/website.xml`, `<t t-
         </div>
     </t>
 `);
+registerTemplate("barcodes.BarcodeScanner", `/barcodes/static/src/components/barcode_scanner.xml`, `<t t-name="barcodes.BarcodeScanner" xml:space="preserve">
+        <div class="o_barcode_mobile_container">
+            <a t-if="isBarcodeScannerSupported" role="button" class="btn btn-primary o_mobile_barcode" t-on-click="openMobileScanner">
+                <i class="fa fa-camera fa-2x o_barcode_mobile_camera"/>
+                Tap to scan
+            </a>
+            <img src="/barcodes/static/img/barcode.png" alt="Barcode"/>
+            <span class="o_barcode_laser"/>
+        </div>
+    </t>
+
+`);
+registerTemplate("barcodes.FloatScannableField", `/barcodes/static/src/float_scannable_field.xml`, `<t t-name="barcodes.FloatScannableField" t-inherit="web.FloatField" t-inherit-mode="primary" xml:space="preserve">
+        <xpath expr="//input" position="attributes">
+            <attribute name="t-on-barcode_scanned">onBarcodeScanned</attribute>
+            <attribute name="t-att-data-enable-barcode">true</attribute>
+            <attribute name="barcode_events">true</attribute>
+        </xpath>
+    </t>
+
+`);
+registerTemplate("stock.TraceabilityReport", `/stock/static/src/client_actions/stock_traceability_report_backend.xml`, `<t t-name="stock.TraceabilityReport" xml:space="preserve">
+        <div class="o_action">
+            <Layout display="display">
+                <t t-set-slot="layout-buttons">
+                    <div class="o_cp_buttons" role="toolbar" aria-label="Control panel buttons" t-ref="buttons">
+                        <button type="button" class="btn btn-primary" t-on-click="() =&gt; this.onClickPrint()">Print</button>
+                    </div>
+                </t>
+
+                <div class="container-fluid o_stock_reports_page o_stock_reports_no_print">
+                    <t t-if="state.lines.length">
+                        <h1 class="o_report_heading text-start">Traceability Report</h1>
+                        <div class="o_stock_reports_table table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr class="o_report_header">
+                                        <th class="o_report_line_header">Reference</th>
+                                        <th class="o_report_line_header">Product</th>
+                                        <th class="o_report_line_header">Date</th>
+                                        <th class="o_report_line_header">Lot/Serial #</th>
+                                        <th class="o_report_line_header">From</th>
+                                        <th class="o_report_line_header">To</th>
+                                        <th class="o_report_line_header">Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-call="stock.ReportMRPLines">
+                                        <t t-set="lines" t-value="state.lines"/>
+                                        <t t-set="hasUpDown" t-value="true"/>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                    <h1 t-else="" class="text-center">No operation made on this lot.</h1>
+                </div>
+            </Layout>
+        </div>
+    </t>
+
+    `);
+registerTemplate("stock.ReportMRPLines", `/stock/static/src/client_actions/stock_traceability_report_backend.xml`, `<t t-name="stock.ReportMRPLines" xml:space="preserve">
+        <t t-foreach="lines" t-as="line" t-key="line.id">
+            <t t-set="column" t-value="0"/>
+            <tr t-att-class="line.model === 'stock.move.line' ? 'o_stock_reports_level0' : 'o_stock_reports_default_style'">
+                <t t-foreach="line.columns" t-as="col" t-key="col_index">
+                    <td t-att-class="line.unfoldable ? 'o_stock_reports_unfoldable' : ''">
+                        <t t-if="col_first">
+                            <span t-attf-style="margin-left: {{line.level}}px"/>
+                            <t t-if="hasUpDown and line.is_used ">
+                                <span role="img" title="Traceability Report" aria-label="Traceability Report" t-on-click.prevent="() =&gt; this.onClickUpDownStream(line)">
+                                    <i class="fa fa-fw fa-level-up fa-rotate-270"/>
+                                </span>
+                            </t>
+                            <t t-elif="line.unfoldable">
+                                <span class="o_stock_reports_unfoldable o_stock_reports_caret_icon" t-on-click="() =&gt; this.toggleLine(line)">
+                                    <i class="fa fa-fw" t-att-class="line.isFolded ? 'fa-caret-right' : 'fa-caret-down'" role="img" aria-label="Unfold" title="Unfold"/>
+                                </span>
+                            </t>
+                        </t>
+
+                        <span t-if="col and line.reference === col" t-att-class="!line.unfoldable ? 'o_stock_reports_nofoldable' : ''">
+                            <a class="o_stock_reports_web_action" href="#" t-on-click.prevent="() =&gt; this.onClickBoundLink(line)" t-esc="col"/>
+                        </span>
+                        <span t-elif="col and line.lot_name === col">
+                            <span class="o_stock_report_lot_action" t-esc="col"/>
+                        </span>
+                        <t t-elif="col" t-esc="col"/>
+                    </td>
+                </t>
+            </tr>
+
+            <t t-if="!line.isFolded and line.lines.length" t-call="stock.ReportMRPLines">
+                <t t-set="lines" t-value="line.lines"/>
+                <t t-set="hasUpDown" t-value="false"/>
+            </t>
+        </t>
+    </t>
+
+`);
+registerTemplate("stock.ReceptionReportLine", `/stock/static/src/components/reception_report_line/stock_reception_report_line.xml`, `<tr t-name="stock.ReceptionReportLine" class="align-middle" xml:space="preserve">
+        <td t-esc="data.product.display_name"/>
+        <td>
+            <t t-esc="formatFloat(data.quantity)"/> <t t-if="props.showUom" t-esc="data.uom"/>
+            <button class="btn btn-link fa fa-area-chart" t-on-click="onClickForecast" name="forecasted_report_link"/>
+        </td>
+        <td t-if="data.is_qty_assignable">
+            <button t-if="!data.is_assigned" t-on-click="onClickAssign" class="btn btn-sm btn-primary" name="assign_link">
+                Assign
+            </button>
+            <button t-else="" t-on-click="onClickUnassign" class="btn btn-sm btn-primary" name="unassign_link">
+                Unassign
+            </button>
+        </td>
+        <td>
+            <button t-if="data.is_qty_assignable &amp;&amp; data.source" class="btn btn-sm btn-primary" t-attf-disabled="{{ !data.is_assigned }}" name="print_label" t-on-click="onClickPrint">
+                <span class="d-sm-block">Print Label</span>
+            </button>
+        </td>
+    </tr>
+
+`);
+registerTemplate("stock.ReceptionReportMain", `/stock/static/src/components/reception_report_main/stock_reception_report_main.xml`, `<div t-name="stock.ReceptionReportMain" class="o_action" xml:space="preserve">
+        <ControlPanel display="controlPanelDisplay">
+            <t t-set-slot="control-panel-always-buttons">
+                <div class="o_cp_buttons" role="toolbar" aria-label="Control panel buttons">
+                    <div class="d-inline-block">
+                        <button t-on-click="onClickPrint" type="button" class="btn btn-primary" title="Print">Print</button>
+                        <button t-on-click="onClickAssignAll" class="btn btn-secondary ms-1" t-att-disabled="isAssignAllDisabled">Assign All</button>
+                        <button t-on-click="onClickPrintLabels" class="btn btn-secondary ms-1" t-att-disabled="isPrintLabelDisabled">Print Labels</button>
+                    </div>
+                </div>
+            </t>
+        </ControlPanel>
+        <div class="o_report_reception container-fluid justify-content-between">
+            <div class="o_report_reception_header my-4">
+                <h1>
+                    <t t-if="data.docs">
+                        <div t-foreach="data.docs" t-as="doc" t-key="doc.id">
+                            <a href="#" t-on-click.prevent="() =&gt; this.onClickTitle(doc.id)" view-type="form" t-esc="doc.name"/>
+                            <span t-esc="doc.display_state" t-attf-class="ms-1 align-text-top badge rounded-pill bg-opacity-50 {{ doc.state == 'done' ? 'bg-success' : 'bg-info' }}"/>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <span t-esc="data.reason"/>
+                    </t>
+                </h1>
+            </div>
+            <t t-if="hasContent">
+                <table class="table table-sm">
+                    <ReceptionReportTable t-foreach="state.sourcesToLines" t-as="source" t-key="source" index="source" scheduledDate="data.sources_to_formatted_scheduled_date[source]" lines="state.sourcesToLines[source]" source="data.sources_info[source]" showUom="data.show_uom" precision="data.precision"/>
+                </table>
+            </t>
+            <p t-else="">
+                No allocation need found.
+            </p>
+        </div>
+    </div>
+
+`);
+registerTemplate("stock.ReceptionReportTable", `/stock/static/src/components/reception_report_table/stock_reception_report_table.xml`, `<t t-name="stock.ReceptionReportTable" xml:space="preserve">
+        <thead>
+            <tr class="bg-light">
+                <th>
+                    <i t-if="props.source[0].priority == '1'" class="o_priority o_priority_star fa fa-star"/>
+                    <a href="#" t-on-click.prevent="() =&gt; this.onClickLink(props.source[0].model, props.source[0].id, 'form')" t-out="props.source[0].name"/>
+                    <span t-if="props.source.length &gt; 1">
+                        (<a href="#" t-on-click.prevent="() =&gt; this.onClickLink(props.source[1].model, props.source[1].id, 'form')" t-out="props.source[1].name"/>)
+                    </span>
+                    <span t-if="props.source[0].model == 'stock.picking' and props.source[0].partner_id">:
+                        <a href="#" t-on-click.prevent="() =&gt; this.onClickLink('res.partner', props.source[0].partner_id, 'form')" t-out="props.source[0].partner_name"/>
+                    </span>
+                </th>
+                <th>Expected Delivery: <t t-esc="props.scheduledDate"/></th>
+                <th t-if="hasMovesIn">
+                    <button t-if="hasAssignAllButton" t-on-click="onClickAssignAll" class="btn btn-sm btn-primary" t-att-disabled="isAssignAllDisabled" name="assign_source_link">
+                        Assign All
+                    </button>
+                </th>
+                <th>
+                    <button t-if="hasMovesIn" t-on-click="onClickPrintLabels" class="btn btn-sm btn-primary" t-att-disabled="isPrintLabelDisabled" name="print_labels">
+                        <span class="d-none d-sm-block">Print Labels</span>
+                        <span class="d-block d-sm-none fa fa-print"/>
+                    </button>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-foreach="props.lines" t-as="line" t-key="line.index">
+                <ReceptionReportLine data="line" parentIndex="props.index" showUom="props.showUom" precision="props.precision"/>
+            </t>
+        </tbody>
+    </t>
+
+`);
+registerTemplate("stock.ForecastedButtons", `/stock/static/src/stock_forecasted/forecasted_buttons.xml`, `<t t-name="stock.ForecastedButtons" xml:space="preserve">
+        <button title="Replenish" t-on-click="_onClickReplenish" class="o_forecasted_replenish_btn btn btn-primary">
+            Replenish
+        </button>
+        <button title="Update Quantity" t-on-click="_onClickUpdateQuantity" class="o_forecasted_update_qty_btn btn btn-secondary">
+            Update Quantity
+        </button>
+    </t>
+
+`);
+registerTemplate("stock.ForecastedDetails", `/stock/static/src/stock_forecasted/forecasted_details.xml`, `<t t-name="stock.ForecastedDetails" xml:space="preserve">
+        <table class="table table-bordered bg-view">
+            <thead>
+                <tr class="bg-light">
+                    <td>Replenishment</td>
+                    <td>Receipt</td>
+                    <td t-if="props.docs.multiple_product">Product</td>
+                    <td class="text-end"><t t-out="props.docs.uom"/></td>
+                    <td>Used by</td>
+                    <td>Delivery</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr t-if="onHandCondition">
+                    <td>Inventory On Hand</td>
+                    <td/>
+                    <td t-if="props.docs.multiple_product"/>
+                    <td class="text-end">0</td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                </tr>
+                <tr t-foreach="props.docs.lines" t-as="line" t-key="line_index" t-attf-class="#{line.is_matched and 'o_grid_match table-info'}">
+                    <td t-attf-class="#{line.is_late and 'o_grid_warning table-danger'}">
+                        <a t-if="line.document_in" href="#" t-on-click.prevent="() =&gt; this.props.openView(line.document_in._name, 'form', line.document_in.id)" t-out="line.document_in.name" class="fw-bold"/>
+
+                        <t t-elif="line.reservation">
+                            <a t-out="line.reservation.name" href="#" class="fw-bold" t-on-click.prevent="() =&gt; this.props.openView(line.reservation._name, 'form', line.reservation.id)"/> reserved
+                            <button t-if="displayReserve(line)" class="btn btn-sm btn-primary o_report_replenish_unreserve" name="unreserve_link" t-on-click="() =&gt; this._unreserve(line.move_out.id)">
+                                Unreserve
+                            </button>
+                        </t>
+                        <t t-elif="line.in_transit">
+                            <t t-if="line.move_out">
+                                <span>Stock In Transit</span>
+                            </t>
+                            <t t-else="">
+                                <span>Free Stock in Transit</span>
+                            </t>
+                        </t>
+                        <t t-elif="line.replenishment_filled">
+                            <t t-if="line.document_out">Inventory On Hand
+                                <button t-if="displayReserve(line)" class="btn btn-sm btn-primary" name="reserve_link" t-on-click="() =&gt; this._reserve(line.move_out.id)">
+                                    Reserve
+                                </button>
+                            </t>
+                            <t t-else="">Free Stock</t>
+                        </t>
+                        <span t-else="" class="text-muted">Not Available</span>
+                    </td>
+                    <td t-out="line.receipt_date or ''" t-attf-class="#{line.is_late and 'o_grid_warning table-danger'}"/>
+                    <td t-if="props.docs.multiple_product" t-out="line.product.display_name"/>
+                    <td class="text-end"><t t-if="! line.replenishment_filled">- </t><t t-out="_formatFloat(line.quantity)"/></td>
+                    <td t-attf-class="#{! line.replenishment_filled and 'o_grid_warning table-danger'}" name="usedby_cell">
+                        <button t-if="line.move_out and line.move_out.picking_id" t-attf-class="o_priority o_priority_star me-1 fa fa-star#{line.move_out.picking_id.priority=='1' ? '' : '-o'}" t-on-click="() =&gt; this._onClickChangePriority('stock.picking', line.move_out.picking_id)" name="change_priority_link"/>
+                        <a t-if="line.document_out" href="#" t-on-click.prevent="() =&gt; this.props.openView(line.document_out._name, 'form', line.document_out.id)" t-out="line.document_out.name" class="fw-bold"/>
+                    </td>
+                    <td t-out="line.delivery_date or ''" t-attf-class="#{! line.replenishment_filled and 'o_grid_warning table-danger'}"/>
+                </tr>
+                <tr t-if="this.props.docs.qty_to_order">
+                    <td>To Order</td>
+                    <td t-out="this.props.docs.lead_days_date"/>
+                    <td t-out="_formatFloat(this.props.docs.qty_to_order)" class="text-end"/>
+                </tr>
+                <tr t-if="this.props.docs.qty_to_order !== this.props.docs.qty_to_order_with_visibility_days">
+                    <td>To Order with Visibility Days</td>
+                    <td t-out="this.props.docs.visibility_days_date"/>
+                    <td t-out="_formatFloat(this.props.docs.qty_to_order_with_visibility_days)" class="text-end"/>
+                </tr>
+            </tbody>
+            <thead>
+                <tr class="o_forecasted_row bg-200">
+                    <td colspan="2">Forecasted Inventory</td>
+                    <td t-out="_formatFloat(this.props.docs.virtual_available)" class="text-end"/>
+                </tr>
+            </thead>
+            <tbody t-if="props.docs.qty.in or props.docs.qty.out">
+                <tr t-if="props.docs.draft_picking_qty.in" name="draft_picking_in">
+                    <td colspan="2">Incoming Draft Transfer</td>
+                    <td t-out="_formatFloat(this.props.docs.draft_picking_qty.in)" class="text-end"/>
+                </tr>
+                <tr t-if="props.docs.draft_picking_qty.out" name="draft_picking_out">
+                    <td colspan="2">Outgoing Draft Transfer</td>
+                    <td t-out="_formatFloat(this.props.docs.draft_picking_qty.out)" class="text-end"/>
+                </tr>
+            </tbody>
+            <thead>
+                <tr class="o_forecasted_row bg-200">
+                    <td colspan="2">Forecasted with Pending</td>
+                    <td t-out="_formatFloat(futureVirtualAvailable)" class="text-end"/>
+                </tr>
+            </thead>
+        </table>
+    </t>
+`);
+registerTemplate("stock.ForecastedHeader", `/stock/static/src/stock_forecasted/forecasted_header.xml`, `<t t-name="stock.ForecastedHeader" xml:space="preserve">
+        <div class="d-flex flex-wrap pb-2 justify-content-between">
+            <div class="o_product_name">
+                <h3>
+                    <t t-if="props.docs.product_templates">
+                        <t t-foreach="props.docs.product_templates" t-as="product_template" t-key="product_template.id">
+                            <a href="#" t-on-click.prevent="() =&gt; this.props.openView('product.template', 'form', product_template.id)" t-out="product_template.display_name"/>
+                        </t>
+                    </t>
+                    <t t-elif="props.docs.product_variants">
+                        <t t-foreach="props.docs.product_variants" t-as="product_variant" t-key="product_variant.id">
+                            <a href="#" t-on-click.prevent="() =&gt; this.props.openView('product.product', 'form', product_variant.id)" t-out="product_variant.display_name"/>
+                        </t>
+                    </t>
+                </h3>
+                <h6 t-if="props.docs.product_templates and props.docs.product_variants and props.docs.product_templates.length != props.docs.product_variants.length" name="product_variants">
+                    <t t-foreach="props.docs.product_variants" t-as="product_variant" t-key="product_variant.id">
+                        <a href="#" t-on-click.prevent="() =&gt; this.props.openView('product.product', 'form', product_variant.id)">
+                            [<t t-out="product_variant.combination_name"/>]
+                        </a>
+                    </t>
+                </h6>
+            </div>
+            <div class="row">
+                <div class="col-md-auto text-center">
+                    <div class="h3">
+                        <a href="#" t-on-click.prevent="() =&gt; this._onClickInventory()" t-out="_formatFloat(this.props.docs.quantity_on_hand)"/>
+                    </div>
+                    <div>On Hand</div>
+                </div>
+                <div class="h3 col-md-auto text-center">+</div>
+                <div t-attf-class="col-md-auto text-center #{props.docs.incoming_qty}">
+                    <div class="h3">
+                        <t t-out="_formatFloat(this.props.docs.incoming_qty)"/>
+                    </div>
+                    <div>Incoming</div>
+                </div>
+                <div class="h3 col-md-auto text-center">-</div>
+                <div t-attf-class="col-md-auto text-center #{props.docs.outgoing_qty}">
+                    <div class="h3">
+                        <t t-out="_formatFloat(this.props.docs.outgoing_qty)"/>
+                    </div>
+                    <div>Outgoing</div>
+                </div>
+                <div class="h3 col-md-auto text-center">=</div>
+                <div t-attf-class="col-md-auto text-center #{props.docs.virtual_available &lt; 0 and 'text-danger'}" name="forecasted_value">
+                    <div class="h3">
+                        <span t-out="_formatFloat(this.props.docs.virtual_available)"/>
+                        <span t-out="' ' + props.docs.uom" groups="uom.group_uom"/>
+                    </div>
+                    <div>Forecasted</div>
+                </div>
+            </div>
+        </div>
+    </t>
+`);
+registerTemplate("stock.ForecastedWarehouseFilter", `/stock/static/src/stock_forecasted/forecasted_warehouse_filter.xml`, `<t t-name="stock.ForecastedWarehouseFilter" xml:space="preserve">
+        <div t-if="displayWarehouseFilter" class="btn-group">
+            <Dropdown menuClass="o_filter_menu" items="warehousesItems">
+                <button class="btn btn-secondary">
+                    <span class="fa fa-home"/> Warehouse: <t t-out="activeWarehouse.name"/>
+                </button>
+            </Dropdown>
+        </div>
+    </t>
+
+`);
+registerTemplate("stock.Forecasted", `/stock/static/src/stock_forecasted/stock_forecasted.xml`, `<div t-name="stock.Forecasted" class="o_action" xml:space="preserve">
+        <ControlPanel>
+            <t t-set-slot="layout-buttons">
+                <ForecastedButtons action="props.action" reloadReport.bind="reloadReport" resModel="resModel"/>
+            </t>
+            <t t-set-slot="layout-actions">
+                <div class="btn-group o_search_options position-static" role="search">
+                    <ForecastedWarehouseFilter action="props.action" warehouses="warehouses" setWarehouseInContext.bind="updateWarehouse"/>
+                </div>
+            </t>
+        </ControlPanel>
+        <div class="o-content pt-3 container-fluid overflow-auto o_stock_forecasted_page">
+            <ForecastedHeader docs="docs" openView.bind="openView"/>
+            <t t-if="context.warehouse_id">
+                <View type="'graph'" viewId="stock_report_view_graph" resModel="'report.stock.quantity'" domain="graphDomain" display="{controlPanel: false}" context="{fill_temporal: false}" info="graphInfo" useSampleModel="true"/>
+            </t>
+            <ForecastedDetails docs="docs" openView.bind="openView" reloadReport.bind="reloadReport"/>
+        </div>
+    </div>
+`);
+registerTemplate("stock.MovesListRenderer.RecordRow", `/stock/static/src/views/picking_form/stock_move_one2many.xml`, `<t t-name="stock.MovesListRenderer.RecordRow" t-inherit-mode="primary" t-inherit="web.ListRenderer.RecordRow" xml:space="preserve">
+        <xpath expr="//tr/t[1]" position="inside">
+            <t t-if="column.type === 'opendetailsop'">
+                <td class="o_data_cell cursor-pointer o_list_button">
+                    <t t-if="record.resModel === 'stock.move' &amp;&amp; record.data?.show_details_visible">
+                        <button name="Open Move" class="btn btn-link fa fa-list" t-on-click="() =&gt; props.openRecord(record)"/>
+                    </t>
+                </td>
+            </t>
+        </xpath>
+    </t>
+
+`);
+registerTemplate("stock.StockOrderpointSearchPanel.Regular", `/stock/static/src/views/search/stock_orderpoint_search_panel.xml`, `<t t-name="stock.StockOrderpointSearchPanel.Regular" t-inherit="web.SearchPanel.Regular" xml:space="preserve">
+        <xpath expr="//div[contains(@class, 'o_search_panel')]" position="inside">
+            <section class="o_search_panel_section o_search_panel_filter">
+                <header class="o_search_panel_section_header pt-4 pb-2 text-uppercase cursor-default">
+                    <i t-attf-class="fa fa-clock-o o_search_panel_section_icon text-warning me-2"/>
+                    <b>Horizon</b>
+                </header>
+
+                <div class="input-group">
+                    <input type="number" min="0" t-att-value="globalVisibilityDays.value" class="form-control" aria-describedby="days-label" t-on-change="applyGlobalVisibilityDays"/>
+                    <span class="input-group-text" id="days-label">days</span>
+                </div>
+            </section>
+        </xpath>
+    </t>
+
+    `);
+registerTemplate("stock.StockOrderpointSearchPanel", `/stock/static/src/views/search/stock_orderpoint_search_panel.xml`, `<t t-name="stock.StockOrderpointSearchPanel" t-inherit="web.SearchPanel" t-inherit-mode="primary" xml:space="preserve">
+        <xpath expr="//t[@t-call='web.SearchPanel.Regular']" position="attributes">
+            <attribute name="t-call">stock.StockOrderpointSearchPanel.Regular</attribute>
+        </xpath>
+    </t>
+`);
+registerTemplate("stock.StockReportSearchPanel.Regular", `/stock/static/src/views/search/stock_report_search_panel.xml`, `<t t-name="stock.StockReportSearchPanel.Regular" t-inherit="web.SearchPanel.Regular" xml:space="preserve">
+    <xpath expr="//div/section[1]" position="before">
+        <section t-if="warehouses.length &gt; 1" class="o_search_panel_section o_search_panel_warehouse">
+            <header class="o_search_panel_section_header pt-4 pb-2 text-uppercase o_cursor_default">
+                <i t-attf-class="fa fa-filter o_search_panel_section_icon text-warning me-2"/>
+                <b>Warehouses</b>
+            </header>
+            <ul class="list-group d-block o_search_panel_field">
+                <li class="o_search_panel_filter_value list-group-item p-0 mb-1 border-0 o_cursor_pointer">
+                    <span t-on-click="ev =&gt; this.clearWarehouseContext(ev)" t-att-class="{'fw-bolder': !selectedWarehouse, 'o_search_panel_label_title':true}">All Warehouses</span>
+                </li>
+                <li class="o_search_panel_filter_value list-group-item p-0 mb-1 border-0 o_cursor_pointer" t-foreach="warehouses" t-as="warehouse" t-key="warehouse.id">
+                    <div t-out="warehouse.name" t-on-click="ev =&gt; this.applyWarehouseContext(warehouse.id, ev)" t-att-class="{'fw-bolder': selectedWarehouse === warehouse.id, 'o_search_panel_label_title':true,                         'bg-info-subtle': selectedWarehouse === warehouse.id}"/>
+                </li>
+            </ul>
+        </section>
+    </xpath>
+</t>
+
+`);
+registerTemplate("stock.StockReportSearchPanel", `/stock/static/src/views/search/stock_report_search_panel.xml`, `<t t-name="stock.StockReportSearchPanel" t-inherit="web.SearchPanel" t-inherit-mode="primary" xml:space="preserve">
+    <xpath expr="//t[@t-call='web.SearchPanel.Regular']" position="attributes">
+        <attribute name="t-call">stock.StockReportSearchPanel.Regular</attribute>
+    </xpath>
+</t>
+
+`);
+registerTemplate("stock.StockListRenderer", `/stock/static/src/views/stock_empty_list_help.xml`, `<t t-name="stock.StockListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="primary" xml:space="preserve">
+        <t t-call="web.ActionHelper" position="replace">
+            <t t-if="showNoContentHelper">
+                <StockActionHelper noContentHelp="props.noContentHelp"/>
+            </t>
+        </t>
+    </t>
+
+    `);
+registerTemplate("stock.StockActionHelper", `/stock/static/src/views/stock_empty_list_help.xml`, `<t t-name="stock.StockActionHelper" xml:space="preserve">
+        <div class="o_view_nocontent">
+            <div t-on-click="handler" class="o_nocontent_help">
+                <t t-out="props.noContentHelp"/>
+            </div>
+        </div>
+    </t>
+
+`);
+registerTemplate("stock.StockOrderpoint.listView", `/stock/static/src/views/stock_orderpoint_list_view.xml`, `<t t-name="stock.StockOrderpoint.listView" t-inherit="web.ListView" xml:space="preserve">
+        <xpath expr="//t[@t-call='web.ListView.Selection']" position="after">
+            <Dropdown>
+                <button class="btn btn-secondary">
+                    <span class="o_dropdown_title">Replenish</span>
+                    <i class="fa fa-caret-down ms-1"/>
+                </button>
+                <t t-set-slot="content">
+                    <DropdownItem t-if="nbSelected" onSelected="() =&gt; this.onClickOrder(false)">
+                        Order
+                    </DropdownItem>
+                    <DropdownItem t-if="nbSelected" onSelected="() =&gt; this.onClickOrder(true)">
+                        Order To Max
+                    </DropdownItem>
+                </t>
+            </Dropdown>
+            <button t-if="nbSelected" type="button" t-on-click="onClickSnooze" class="o_button_snooze btn btn-secondary me-1">
+                Snooze
+            </button>
+        </xpath>
+    </t>
+
+`);
+registerTemplate("stock.ForecastWidget", `/stock/static/src/widgets/forecast_widget.xml`, `<t t-name="stock.ForecastWidget" xml:space="preserve">
+        <span t-if="!forecastExpectedDate and willBeFulfilled" class="text-success">
+            Available
+        </span>
+        <span t-elif="forecastExpectedDate and willBeFulfilled" t-att-class="forecastIsLate ? 'text-danger' : 'text-warning'">
+            Exp <t t-out="forecastExpectedDate"/>
+        </span>
+        <span t-else="" class="text-danger">Not Available</span>
+        <button t-if="props.record.data.is_storable" title="Forecasted Report" t-on-click="_openReport" t-att="resId ? {} : {'disabled': ''}" class="o_forecast_report_button btn btn-link o_icon_button ms-2 pt-0">
+            <i class="fa fa-fw fa-area-chart" t-att-class="state != 'draft' and (!willBeFulfilled or forecastIsLate) ? 'text-danger' : ''"/>
+        </button>
+    </t>
+
+`);
+registerTemplate("stock.leadDays", `/stock/static/src/widgets/json_widget.xml`, `<div t-name="stock.leadDays" xml:space="preserve">
+        <h2>Lead Times</h2>
+        <hr/>
+        <p>
+            The forecasted stock on the <b t-esc="jsonValue.lead_days_date"/>
+            is <t t-if="jsonValue.qty_to_order &lt;= 0"><b><t t-esc="qtyForecast"/></b></t><t t-else="">
+            below the inventory <b>minimum of <t t-esc="productMinQty"/>
+            : <t t-esc="qtyToOrder"/> should be replenished</b> to reach the maximum of
+            <t t-esc="productMaxQty"/>.</t>
+        </p>
+        <table t-if="jsonValue.lead_days_description" class="table table-borderless table-sm">
+            <tbody>
+                <tr>
+                    <td>Today</td>
+                    <td class="text-end" t-out="jsonValue.today"/>
+                </tr>
+                <tr t-foreach="jsonValue.lead_days_description" t-key="descr" t-as="descr">
+                    <td t-out="descr[0]"/>
+                    <td class="text-end" t-out="descr[1]"/>
+                </tr>
+                <tr class="table-info">
+                    <td>Forecasted Date</td>
+                    <td class="text-end text-nowrap">
+                        = <t t-out="jsonValue.lead_days_date"/>
+                    </td>
+                </tr>
+                <tr t-if="jsonValue.visibility_days &gt; 0">
+                    <td>Visibility days</td>
+                    <td class="text-end text-nowrap">
+                        + <t t-out="jsonValue.visibility_days"/> Day(s)
+                    </td>
+                </tr>
+                <tr t-if="jsonValue.visibility_days &gt; 0" class="table-info fw-bold">
+                    <td>Forecasted Date + Visibility Days</td>
+                    <td class="text-end text-nowrap">
+                        = <t t-out="jsonValue.visibility_days_date"/>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    `);
+registerTemplate("stock.replenishmentHistory", `/stock/static/src/widgets/json_widget.xml`, `<div t-name="stock.replenishmentHistory" xml:space="preserve">
+        <h2>Sales History</h2>
+        <hr/>
+        <table t-if="jsonValue.replenishment_history" class="table table-borderless">
+            <tbody>
+                <t t-foreach="jsonValue.replenishment_history" t-key="line.name" t-as="line">
+                    <tr>
+                        <td><t t-esc="line.name"/></td>
+                        <td class="text-end text-nowrap" t-esc="line.quantity + ' ' + line.uom_name"/>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </div>
+`);
+registerTemplate("stock.GenerateSerials", `/stock/static/src/widgets/lots_dialog.xml`, `<t t-name="stock.GenerateSerials" xml:space="preserve">
+        <button class="btn btn-link" t-on-click="openDialog">Generate Serials/Lots</button>
+    </t>
+    `);
+registerTemplate("stock.ImportLots", `/stock/static/src/widgets/lots_dialog.xml`, `<t t-name="stock.ImportLots" xml:space="preserve">
+        <button class="btn btn-link" t-on-click="openDialog">Import Serials/Lots</button>
+    </t>
+    `);
+registerTemplate("stock.generate_serial_dialog", `/stock/static/src/widgets/lots_dialog.xml`, `<t t-name="stock.generate_serial_dialog" xml:space="preserve">
+        <Dialog size="size" title="title" withBodyPadding="false">
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="_onGenerate">Generate</button>
+                <button class="btn btn-secondary" t-on-click="() =&gt; this.props.close()">
+                    Discard
+                </button>
+            </t>
+            <div class="o_form_view o_form_nosheet">
+                <t t-if="props.mode === 'generate'">
+                    <div class="grid o_inner_group">
+                        <div class="d-flex d-sm-contents">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="next_serial_0">
+                                    <t t-if="props.move.data.has_tracking === 'lot'">First Lot Number</t>
+                                    <t t-else="">First Serial Number</t>
+                                </label>
+                            </div>
+                            <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                                <div name="next_serial" class="o_field_widget o_field_char">
+                                    <input placeholder="e.g. LOT-PR-00012" class="o_input" t-ref="nextSerial" id="next_serial_0" type="text"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex d-sm-contents">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="next_serial_count_0">
+                                    <t t-if="props.move.data.has_tracking === 'lot'">Quantity per Lot</t>
+                                    <t t-else="">Number of SN</t>
+                                </label>
+                            </div>
+                            <div class="o_row">
+                                <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                                    <div name="next_serial_count" class="o_field_widget o_field_integer">
+                                        <input inputmode="numeric" t-ref="nextSerialCount" class="o_input" id="next_serial_count_0" type="text"/>
+                                    </div>
+                                </div>
+                                <span t-if="props.move.data.has_tracking === 'lot'" t-esc="props.move.data.product_uom[1]"/>
+                            </div>
+                        </div>
+                        <div t-if="props.move.data.has_tracking === 'lot'" class="d-flex d-sm-contents">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="total_received_0">Quantity Received</label>
+                            </div>
+                            <div class="o_row">
+                                <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                                    <div name="total_received" class="o_field_widget o_field_integer">
+                                        <input inputmode="numeric" t-ref="totalReceived" class="o_input" id="total_received_0" type="text"/>
+                                    </div>
+                                </div>
+                                <span t-esc="props.move.data.product_uom[1]"/>
+                            </div>
+                        </div>
+                        <div class="d-flex d-sm-contents">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="keep_lines_0">Keep current lines</label>
+                            </div>
+                            <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                                <div name="keep_lines">
+                                    <input type="checkbox" t-ref="keepLines" id="keep_lines_0"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-if="props.mode === 'import'" class="d-flex">
+                    <div class="grid o_inner_group">
+                        <div class="d-flex">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="next_serial_0">
+                                    <t t-if="props.move.data.has_tracking==='lot'">Lot numbers</t>
+                                    <t t-else="">Serial numbers</t>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div name="next_serial" class="o_field_widget o_field_char">
+                                <textarea placeholder="Write one lot/serial name per line, followed by the quantity." class="o_input" t-ref="lots" id="next_serial_0" type="text"/>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                                <label class="o_form_label" for="keep_lines_0">Keep current lines</label>
+                            </div>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div name="keep_lines">
+                                <input type="checkbox" t-ref="keepLines" id="keep_lines_0"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </Dialog>
+    </t>
+`);
+registerTemplate("stock.popoverButton", `/stock/static/src/widgets/popover_widget.xml`, `<t t-name="stock.popoverButton" xml:space="preserve">
+        <a tabindex="0" t-on-click.stop="showPopup" t-attf-class="p-1 fa #{ icon || 'fa-info-circle'} #{ color || 'text-primary'}"/>
+    </t>
+
+    `);
+registerTemplate("stock.popoverContent", `/stock/static/src/widgets/popover_widget.xml`, `<div t-name="stock.popoverContent" class="m-3" xml:space="preserve">
+        <h6 t-out="props.title"/>
+        <t t-if="props.popoverTemplate" t-call="{{props.popoverTemplate}}"/>
+        <t t-else="" t-out="props.msg"/>
+    </div>
+`);
+registerTemplate("stock.PopoverStockRescheduling", `/stock/static/src/widgets/stock_rescheduling_popover.xml`, `<div t-name="stock.PopoverStockRescheduling" xml:space="preserve">
+        <h6>Planning Issue</h6>
+        <p>Preceding operations
+        <t t-foreach="props.late_elements" t-as="late_element" t-key="late_element.id">
+            <a t-out="late_element.name" t-on-click="openElement" href="#" t-att-element-id="late_element.id" t-att-element-model="late_element.model"/>,
+        </t>
+        planned on <t t-out="props.delay_alert_date"/>.</p>
+    </div>
+`);
+registerTemplate("InventoryLines.Buttons", `/stock/static/src/xml/inventory_lines.xml`, `<t t-name="InventoryLines.Buttons" xml:space="preserve">
+        <button type="button" class="btn btn-primary o_button_validate_inventory">
+            Validate Inventory
+        </button>
+    </t>
+`);
+registerTemplate("reception_report_buttons", `/stock/static/src/xml/report_stock_reception.xml`, `<t t-name="reception_report_buttons" xml:space="preserve">
+    <button name="assign_all_link" class="btn btn-secondary o_report_reception_assign o_assign_all">
+        Assign All
+    </button>
+    <button name="print_all_labels" class="btn btn-secondary o_print_label o_print_label_all">
+        Print Labels
+    </button>
+</t>
+`);
 registerTemplate("sale.BadgeExtraPrice", `/sale/static/src/js/badge_extra_price/badge_extra_price.xml`, `<t t-name="sale.BadgeExtraPrice" xml:space="preserve">
         <span class="badge rounded-pill border ps-1 text-bg-light">
             <span t-out="this.props.price &gt; 0 ? '+' : '-'" class="me-1"/>
@@ -36778,6 +37902,19 @@ registerTemplate("website_sale.FieldVideoPreview", `/website_sale/static/src/xml
         </div>
     </t>
 
+`);
+registerTemplate("stock_account.BooleanToggleConfirm", `/stock_account/static/src/fields/boolean_confirm.xml`, `<t t-name="stock_account.BooleanToggleConfirm" xml:space="preserve">
+        <ConfirmCheckBox className="'o_field_boolean o_boolean_toggle'" id="props.id" value="props.record.data[props.name] or false" disabled="isReadonly" onChange="(value) =&gt; this.onChange(value)"/>
+    </t>
+`);
+registerTemplateExtension("stock.ForecastedHeader", `/stock_account/static/src/stock_account_forecasted/forecasted_header.xml`, `<t t-name="stock_account.ForecastedHeader" t-inherit="stock.ForecastedHeader" t-inherit-mode="extension" xml:space="preserve">
+        <xpath expr="//h6[@name='product_variants']" position="after">
+            <h6 t-if="() =&gt; env.user.has_group('stock.group_stock_manager')">
+                Value On Hand:
+                <a href="#" t-out="props.docs.value" t-on-click.prevent="_onClickValuation"/>
+            </h6>
+        </xpath>
+    </t>
 `);
 registerTemplate("iap.ActionButtonsWidget", `/iap/static/src/action_buttons_widget/action_buttons_widget.xml`, `<t t-name="iap.ActionButtonsWidget" xml:space="preserve">
         <div class="row">
@@ -37214,6 +38351,99 @@ registerTemplate("hsn_autocomplete.DropdownOption", `/l10n_in/static/src/compone
             <div t-out="option.description"/>
         </div>
     </t>
+`);
+registerTemplateExtension("stock.ForecastedDetails", `/sale_stock/static/src/sale_stock_forecasted/forecasted_details.xml`, `<t t-name="sale_stock.ForecastedDetails" t-inherit="stock.ForecastedDetails" t-inherit-mode="extension" xml:space="preserve">
+        <xpath expr="//tr[@name='draft_picking_out']" position="after">
+            <tr t-if="props.docs.draft_sale_qty" name="draft_so_out" t-attf-class="#{props.docs.draft_sale_orders_matched and 'o_grid_match table-info'}">
+                <td colspan="2">Quotations</td>
+                <td t-out="_formatFloat(-props.docs.draft_sale_qty)" class="text-end"/>
+                <td>
+                    <t t-foreach="props.docs.draft_sale_orders" t-as="sale_order" t-key="sale_order_index">
+                        <t t-if="sale_order_index &gt; 0"> | </t>
+                        <a t-attf-href="#" t-out="sale_order.name" class="fw-bold" t-on-click.prevent="() =&gt; this.props.openView('sale.order', 'form', sale_order.id)"/>
+                    </t>
+                </td>
+            </tr>
+        </xpath>
+        <xpath expr="//td[@name='usedby_cell']" position="inside">
+            <span t-if="line.move_out and line.move_out.picking_id and line.move_out.picking_id.sale_id">
+                | <span t-out="_formatMonetary(line.move_out.picking_id.sale_id.amount_untaxed, line.move_out.picking_id.sale_id.currency_id.id)" class="fw-bold"/>
+                | <span t-out="line.move_out.picking_id.sale_id.partner_id.name"/>
+            </span>
+        </xpath>
+    </t>
+`);
+registerTemplate("sale_stock.QtyAtDate", `/sale_stock/static/src/widgets/qty_at_date_widget.xml`, `<t t-name="sale_stock.QtyAtDate" xml:space="preserve">
+        <a t-att-tabindex="props.record.data.display_qty_widget ? '0' : '-1'" t-on-click="showPopup" t-att-class="!props.record.data.display_qty_widget ? 'invisible' : ''" t-attf-class="fa fa-area-chart cursor-pointer {{ calcData.forecasted_issue ? 'text-danger' : '' }}"/>
+    </t>
+
+    `);
+registerTemplate("sale_stock.QtyAtDatePopover", `/sale_stock/static/src/widgets/qty_at_date_widget.xml`, `<t t-name="sale_stock.QtyAtDatePopover" xml:space="preserve">
+        <div class="p-2">
+        <h6>Availability</h6>
+        <table class="table table-borderless table-sm">
+            <tbody>
+                <t t-if="!props.record.data.is_mto and ['draft', 'sent'].includes(props.record.data.state)">
+                    <tr>
+                        <td><strong>Forecasted Stock</strong><br/><small>On <span t-out="props.calcData.delivery_date"/></small></td>
+                        <td class="text-end"><b t-out="props.record.data.virtual_available_at_date"/> <t t-out="props.record.data.product_uom[1]"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Available</strong><br/><small>All planned operations included</small></td>
+                        <td class="text-end"><b t-out="props.record.data.free_qty_today" t-att-class="!props.calcData.will_be_fulfilled ? 'text-danger': ''"/> <t t-out="props.record.data.product_uom[1]"/></td>
+                    </tr>
+                </t>
+                <t t-elif="props.record.data.is_mto and ['draft', 'sent'].includes(props.record.data.state)">
+                    <tr>
+                        <td><strong>Expected Delivery</strong></td>
+                        <td class="oe-right"><span t-out="props.calcData.delivery_date"/></td>
+                    </tr>
+                    <tr>
+                        <p>This product is replenished on demand.</p>
+                    </tr>
+                </t>
+                <t t-elif="props.record.data.state == 'sale'">
+                    <tr>
+                        <td>
+                            <strong>Reserved</strong><br/>
+                        </td>
+                        <td style="min-width: 50px; text-align: right;">
+                            <b t-out="props.record.data.qty_available_today"/> <t t-out="props.record.data.product_uom[1]"/>
+                        </td>
+                    </tr>
+                    <tr t-if="props.record.data.qty_available_today &lt; props.record.data.qty_to_deliver">
+                        <td>
+                            <span t-if="props.calcData.will_be_fulfilled and props.calcData.forecast_expected_date_str">
+                                Remaining demand available at <b t-out="props.calcData.forecast_expected_date_str" t-att-class="props.record.data.scheduled_date &lt; props.record.data.forecast_expected_date ? 'text-danger' : ''"/>
+                            </span>
+                            <span t-elif="!props.calcData.will_be_fulfilled and props.calcData.forecast_expected_date_str" class="text-danger">
+                                Not enough future availability
+                            </span>
+                            <span t-elif="!props.calcData.will_be_fulfilled" class="text-danger">
+                                No future availability
+                            </span>
+                            <span t-else="">
+                                Available in stock
+                            </span>
+                        </td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+        <button t-if="!props.record.data.is_mto" class="text-start btn btn-link" type="button" t-on-click="openForecast">
+            <i class="oi oi-fw o_button_icon oi-arrow-right"/>
+            View Forecast
+        </button>
+        </div>
+    </t>
+`);
+registerTemplate("sale_stock.DelayAlertWidget", `/sale_stock/static/src/xml/delay_alert.xml`, `<div t-name="sale_stock.DelayAlertWidget" class="m-1" xml:space="preserve">
+        <p>The delivery
+            <t t-foreach="props.late_elements" t-as="late_element" t-key="late_element.id">
+                <a t-esc="late_element.name" href="#" t-on-click="openElement" t-att-element-id="late_element.id" t-att-element-model="late_element.model"/>,
+            </t> will be late.
+        </p>
+    </div>
 `);
 registerTemplate("partner_autocomplete.PartnerAutoComplete", `/partner_autocomplete/static/src/xml/partner_autocomplete.xml`, `<t t-name="partner_autocomplete.PartnerAutoComplete" t-inherit="web.AutoComplete" t-inherit-mode="primary" xml:space="preserve">
         <xpath expr="//ul" position="inside">
